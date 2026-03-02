@@ -1,0 +1,505 @@
+---
+title: Custom domains
+description: Configure custom domains for your digital product passports with DNS verification, SSL certificates, and GS1-compliant QR codes
+---
+
+Custom domains allow you to serve digital product passports from your own domain (e.g., `passport.yourbrand.com`) instead of Avelero's default domain. This reinforces brand ownership, improves trust, and enables GS1-compliant QR codes.
+
+## Why use a custom domain?
+
+**Brand consistency**
+- Passports appear on your domain, not a third-party URL
+- Maintains brand ownership throughout the customer journey
+- Reinforces authenticity and trust
+
+**GS1 compliance**
+- GS1 Digital Link standard requires brand-owned domains
+- Enable compliant QR codes for regulated industries
+- Future-proof your product transparency infrastructure
+
+**Better analytics**
+- Track passport views in your own analytics tools
+- Attribute traffic to your domain
+- Integrate with marketing attribution systems
+
+<Note>
+Only brand **owners** can configure custom domains. Brand members can view domain settings but cannot modify them.
+</Note>
+
+## Prerequisites
+
+Before setting up a custom domain:
+
+- You must be a brand owner in Avelero
+- You need access to your domain's DNS settings
+- The domain or subdomain must not be in use elsewhere
+- DNS changes can take 24-48 hours to propagate
+
+<Warning>
+Each brand can configure **one custom domain**. The domain must be globally unique — no two brands can claim the same domain.
+</Warning>
+
+## DNS setup
+
+### Step 1: Add your domain
+
+<Steps>
+  <Step title="Navigate to custom domains">
+    Go to **Settings** → **Brand settings** → **Custom domain**.
+  </Step>
+  
+  <Step title="Enter domain">
+    Enter your desired domain or subdomain:
+    
+    - Subdomain: `passport.yourbrand.com` (recommended)
+    - Apex domain: `yourbrand.com` (if not used for main website)
+    
+    Click **Add domain**.
+  </Step>
+  
+  <Step title="Get DNS instructions">
+    Avelero generates a unique verification token and displays DNS instructions.
+  </Step>
+</Steps>
+
+Your domain is now in **pending** status, awaiting DNS verification.
+
+### Step 2: Configure DNS records
+
+You need to add two DNS records to your domain:
+
+#### TXT record (for verification)
+
+This proves you own the domain:
+
+<CodeGroup>
+```dns Subdomain example
+Type:  TXT
+Host:  _avelero-verification.passport
+Value: avelero-verify-a1b2c3d4e5f6...
+TTL:   300 (or minimum allowed)
+```
+
+```dns Apex domain example
+Type:  TXT
+Host:  _avelero-verification
+Value: avelero-verify-a1b2c3d4e5f6...
+TTL:   300 (or minimum allowed)
+```
+</CodeGroup>
+
+<Accordion title="Provider-specific instructions">
+  **Cloudflare:**
+  - Host field: Enter `_avelero-verification.passport` (full subdomain)
+  - Proxy status: DNS only (gray cloud)
+  
+  **AWS Route 53:**
+  - Name: `_avelero-verification.passport.yourbrand.com.` (include trailing dot)
+  - Type: TXT
+  - Value: Wrap in quotes: `"avelero-verify-..."`
+  
+  **Google Domains:**
+  - Host name: `_avelero-verification.passport`
+  - Type: TXT
+  - Data: Paste verification token
+  
+  **Namecheap:**
+  - Host: `_avelero-verification.passport`
+  - Type: TXT Record
+  - Value: Paste verification token
+</Accordion>
+
+#### CNAME record (for routing)
+
+This points your domain to Avelero's infrastructure:
+
+<CodeGroup>
+```dns Subdomain example
+Type:  CNAME
+Host:  passport
+Value: cname.avelero.com
+TTL:   300 (or minimum allowed)
+```
+
+```dns Apex domain example
+Type:  CNAME
+Host:  @
+Value: cname.avelero.com
+TTL:   300 (or minimum allowed)
+```
+</CodeGroup>
+
+<Warning>
+If you're using an apex domain and your DNS provider doesn't support CNAME on apex (most don't), use an ALIAS or ANAME record instead. Cloudflare users can use a "flattened" CNAME.
+</Warning>
+
+### Step 3: Wait for DNS propagation
+
+DNS changes can take time to propagate:
+
+- **Typical**: 15 minutes to 2 hours
+- **Maximum**: 24-48 hours
+- **Depends on**: Your DNS provider's TTL settings
+
+You can check propagation status using DNS lookup tools:
+
+```bash Check TXT record
+dig TXT _avelero-verification.passport.yourbrand.com
+```
+
+```bash Check CNAME record
+dig CNAME passport.yourbrand.com
+```
+
+## Domain verification
+
+### Verify ownership
+
+Once DNS records are added:
+
+<Steps>
+  <Step title="Return to Avelero">
+    Go to **Settings** → **Brand settings** → **Custom domain**.
+  </Step>
+  
+  <Step title="Trigger verification">
+    Click **Verify domain**.
+  </Step>
+  
+  <Step title="Wait for verification">
+    Avelero queries authoritative nameservers directly to check for the TXT record.
+    
+    This bypasses DNS caching to ensure accurate verification.
+  </Step>
+</Steps>
+
+### Verification process
+
+Avelero performs the following checks:
+
+1. **Find authoritative nameservers** for your domain using DNS-over-HTTPS
+2. **Resolve nameserver IPs** using public DNS resolvers
+3. **Query TXT record** directly from authoritative nameservers
+4. **Compare token** to verify it matches the expected value
+
+<Info>
+By querying authoritative nameservers directly, Avelero avoids DNS caching issues that can cause false negatives during verification.
+</Info>
+
+### Verification results
+
+**Success (status: verified)**
+- Domain ownership confirmed
+- Domain added to Vercel project for SSL provisioning
+- Passports are now accessible via your custom domain
+- Status cannot be changed (domain is locked until removed)
+
+**Failure (status: pending)**
+- Verification token not found or doesn't match
+- DNS records may not have propagated yet
+- You can retry verification at any time
+- Error message indicates the specific issue
+
+## SSL certificate provisioning
+
+Once your domain is verified, Avelero automatically provisions an SSL certificate:
+
+### How SSL works
+
+1. **Automatic provisioning**: Vercel (Avelero's hosting provider) requests a certificate from Let's Encrypt
+2. **Domain validation**: Let's Encrypt verifies domain ownership via HTTP challenge
+3. **Certificate issuance**: SSL certificate is issued and installed
+4. **Auto-renewal**: Certificates renew automatically before expiration
+
+<Note>
+SSL provisioning typically takes 5-15 minutes after domain verification. During this time, your custom domain may show a certificate warning.
+</Note>
+
+### Checking SSL status
+
+Verify SSL is active:
+
+```bash Check certificate
+curl -vI https://passport.yourbrand.com
+```
+
+Look for `SSL certificate verify ok` in the output.
+
+### Force HTTPS
+
+All custom domains enforce HTTPS:
+
+- HTTP requests automatically redirect to HTTPS
+- HSTS headers are set for enhanced security
+- Mixed content is prevented
+
+## Using your custom domain
+
+Once verified and SSL-enabled:
+
+### QR code generation
+
+- New QR codes use your custom domain automatically
+- Old QR codes with default domain continue to work
+- Re-export QR codes to update them to custom domain
+
+### Passport URLs
+
+Passports are accessible at:
+
+```
+https://passport.yourbrand.com/{product-handle}/{variant-sku}
+```
+
+For example:
+```
+https://passport.yourbrand.com/classic-tee/SKU-12345
+```
+
+### GS1 Digital Link format
+
+With a custom domain, you can generate GS1-compliant URLs:
+
+```
+https://passport.yourbrand.com/01/{gtin}/21/{serialNumber}
+```
+
+<Accordion title="GS1 Digital Link explanation">
+  GS1 Digital Link is a standard for encoding product identifiers in web URLs:
+  
+  - `01`: Application Identifier for GTIN (Global Trade Item Number)
+  - `21`: Application Identifier for serial number
+  - Domain must be owned by the brand (hence custom domain requirement)
+  
+  This format enables interoperability with supply chain systems and compliance with regulations like the EU Digital Product Passport.
+</Accordion>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Verification fails with 'No TXT record found'">
+    **Cause:** DNS record not propagated or configured incorrectly.
+    
+    **Solutions:**
+    1. Wait 1-2 hours for DNS propagation
+    2. Check TXT record host includes `_avelero-verification` prefix
+    3. For subdomains, include subdomain in host: `_avelero-verification.passport`
+    4. Verify record using `dig TXT _avelero-verification.passport.yourbrand.com`
+    5. Ensure DNS provider didn't add extra domain suffix (check raw DNS settings)
+  </Accordion>
+
+  <Accordion title="Verification fails with 'Token does not match'">
+    **Cause:** Wrong verification token in DNS record.
+    
+    **Solutions:**
+    1. Copy token exactly as shown in Avelero (no extra spaces)
+    2. Check DNS provider didn't wrap token in extra quotes
+    3. Delete and re-add TXT record if you copied incorrectly
+    4. Verify the exact value using: `dig TXT _avelero-verification.passport.yourbrand.com`
+  </Accordion>
+
+  <Accordion title="Domain verified but SSL certificate warning appears">
+    **Cause:** SSL certificate not yet provisioned or propagated.
+    
+    **Solutions:**
+    1. Wait 15-30 minutes for Vercel to provision certificate
+    2. Check SSL status in Vercel dashboard (contact support for access)
+    3. Verify CNAME record points to `cname.avelero.com`
+    4. Clear browser cache and retry in incognito mode
+    5. If issue persists after 1 hour, contact Avelero support
+  </Accordion>
+
+  <Accordion title="Domain verification times out">
+    **Cause:** DNS query timed out or nameservers unreachable.
+    
+    **Solutions:**
+    1. Check your DNS provider's status page for outages
+    2. Verify nameservers are responding: `dig NS yourbrand.com`
+    3. Retry verification after a few minutes
+    4. If issue persists, check firewall rules on your DNS provider
+  </Accordion>
+
+  <Accordion title="Cannot add domain - already in use">
+    **Cause:** Another brand has already claimed this domain.
+    
+    **Solutions:**
+    1. Verify you're not trying to add a domain used by another brand in your organization
+    2. Check if domain was previously added and not removed
+    3. Contact Avelero support if you believe this is an error
+    4. Use a different subdomain (e.g., `dpp.yourbrand.com` instead of `passport.yourbrand.com`)
+  </Accordion>
+
+  <Accordion title="CNAME already exists error">
+    **Cause:** Subdomain is already pointed elsewhere.
+    
+    **Solutions:**
+    1. Remove existing CNAME record for the subdomain
+    2. Choose a different subdomain not in use
+    3. If subdomain must be used, migrate existing service first
+    4. Cannot use CNAME on apex domain if other records exist (use ALIAS instead)
+  </Accordion>
+
+  <Accordion title="Passport loads but assets don't load (mixed content)">
+    **Cause:** Theme references HTTP assets instead of HTTPS.
+    
+    **Solutions:**
+    1. Go to **Settings** → **Theme** → **Branding**
+    2. Ensure all image URLs use `https://` not `http://`
+    3. Re-upload images if hosted on non-HTTPS servers
+    4. Check browser console for mixed content warnings
+  </Accordion>
+</AccordionGroup>
+
+## Removing a custom domain
+
+To remove your custom domain:
+
+<Steps>
+  <Step title="Open custom domain settings">
+    Go to **Settings** → **Brand settings** → **Custom domain**.
+  </Step>
+  
+  <Step title="Remove domain">
+    Click **Remove domain** and confirm.
+  </Step>
+  
+  <Step title="Cleanup">
+    Avelero:
+    - Deletes domain from database
+    - Removes domain from Vercel project
+    - Revokes SSL certificate
+    
+    The domain becomes available for other brands to claim.
+  </Step>
+</Steps>
+
+<Warning>
+Removing a custom domain will break existing QR codes and links that use that domain. Ensure you've migrated or redirected traffic before removal.
+</Warning>
+
+### After removal
+
+- Passports revert to default Avelero domain
+- Existing QR codes with custom domain will return 404 errors
+- You can re-add the same domain later (requires re-verification)
+- DNS records can be safely deleted from your DNS provider
+
+## Best practices
+
+<CardGroup cols={2}>
+  <Card title="Use subdomains" icon="diagram-project">
+    Use `passport.yourbrand.com` instead of apex domain. Easier to manage and doesn't conflict with main website.
+  </Card>
+  
+  <Card title="Set low TTL initially" icon="clock">
+    Use TTL of 300 seconds (5 minutes) for DNS records during setup. Increase later for better caching.
+  </Card>
+  
+  <Card title="Document DNS changes" icon="file-lines">
+    Keep a record of DNS changes and verification tokens for your team's reference.
+  </Card>
+  
+  <Card title="Test before QR export" icon="qrcode">
+    Verify custom domain works correctly before exporting QR codes to avoid reprinting.
+  </Card>
+</CardGroup>
+
+## Technical reference
+
+### DNS verification implementation
+
+Avelero's verification system queries DNS directly:
+
+```typescript Verification flow
+// 1. Find authoritative nameservers
+const nameservers = await getAuthoritativeNameservers(domain);
+// Uses DNS-over-HTTPS to query NS records
+
+// 2. Resolve nameserver IPs
+const nameserverIPs = await resolveNameserverIPs(nameservers);
+// Uses public DNS (8.8.8.8, 1.1.1.1) to resolve hostnames
+
+// 3. Query TXT record from authoritative nameservers
+const txtRecords = await queryAuthoritativeTxt(
+  `_avelero-verification.${domain}`,
+  nameserverIPs
+);
+// Bypasses all caching layers
+
+// 4. Verify token matches
+const verified = txtRecords.some(r => r.trim() === expectedToken.trim());
+```
+
+### Database schema
+
+Custom domains are stored with the following structure:
+
+<ResponseField name="id" type="uuid">
+  Unique domain record identifier
+</ResponseField>
+
+<ResponseField name="brandId" type="uuid">
+  Brand that owns this domain (foreign key)
+</ResponseField>
+
+<ResponseField name="domain" type="string">
+  Domain name (normalized: lowercase, no trailing dot)
+</ResponseField>
+
+<ResponseField name="status" type="enum">
+  Verification status: `pending`, `verified`, or `failed`
+</ResponseField>
+
+<ResponseField name="verificationToken" type="string">
+  Token that must appear in DNS TXT record
+</ResponseField>
+
+<ResponseField name="verifiedAt" type="timestamp">
+  When domain was successfully verified (null if pending/failed)
+</ResponseField>
+
+<ResponseField name="lastVerificationAttempt" type="timestamp">
+  Timestamp of most recent verification attempt
+</ResponseField>
+
+<ResponseField name="verificationError" type="string">
+  Error message from last failed verification
+</ResponseField>
+
+### API endpoints
+
+Custom domains are managed via tRPC:
+
+- `brand.customDomains.get` - Get domain configuration
+- `brand.customDomains.add` - Add new domain (generates token)
+- `brand.customDomains.verify` - Trigger DNS verification
+- `brand.customDomains.remove` - Remove domain
+
+### Security considerations
+
+**Token generation:**
+- 256-bit cryptographically secure random token
+- Format: `avelero-verify-{64-char-hex}`
+- Prevents domain hijacking via token guessing
+
+**DNS verification:**
+- Queries authoritative nameservers only
+- 10-second timeout prevents DOS via slow DNS
+- Validation uses constant-time string comparison
+
+**SSL enforcement:**
+- All traffic forced to HTTPS via 301 redirect
+- HSTS headers prevent downgrade attacks
+- Certificate auto-renewal prevents expiration
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="QR code export" icon="qrcode" href="/integrations/bulk-import-export">
+    Export QR codes with your custom domain for product labeling.
+  </Card>
+  
+  <Card title="Theme customization" icon="palette" href="/guides/theming-and-branding">
+    Customize passport appearance to match your brand.
+  </Card>
+</CardGroup>

@@ -1,80 +1,358 @@
 ---
-title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+title: Quickstart
+description: Create your first Digital Product Passport in 5 minutes
 ---
 
-## Get started in three steps
+## Prerequisites
 
-Get your documentation site running locally and make your first customization.
+Before you begin, make sure you have:
 
-### Step 1: Set up your local environment
+- An Avelero account (sign up at [app.avelero.com](https://app.avelero.com))
+- At least one product you want to create a passport for
+- Product information: name, materials, manufacturer details
 
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
+## Step 1: Create your brand
+
+When you first sign in, you'll be prompted to create a brand.
+
+<Steps>
+  <Step title="Enter brand details">
+    Provide your brand name and select the country where your brand operates.
     
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
+    ```typescript
+    // Brand creation uses this schema
+    {
+      name: "Acme Fashion",
+      country_code: "US",
+      email: "contact@acmefashion.com" // optional
+    }
+    ```
+  </Step>
+  <Step title="Customize brand settings">
+    Navigate to **Settings** → **Brand** to add:
+    - Brand logo
+    - Contact email
+    - Brand slug (used in URLs)
+  </Step>
+</Steps>
+
+<Info>
+  The brand slug must be unique across Avelero and uses lowercase letters, numbers, and dashes only.
+</Info>
+
+## Step 2: Set up your catalog
+
+Before creating products, set up your brand's catalog data.
+
+### Add manufacturers
+
+<Steps>
+  <Step title="Navigate to Settings → Manufacturers">
+    Click **Add manufacturer** to create a new manufacturer record.
+  </Step>
+  <Step title="Enter manufacturer details">
+    ```typescript
+    {
+      name: "Ethical Textiles Co.",
+      legal_name: "Ethical Textiles Corporation",
+      country_code: "BD",
+      city: "Dhaka",
+      email: "info@ethicaltextiles.com",
+      website: "https://ethicaltextiles.com"
+    }
+    ```
+  </Step>
+</Steps>
+
+### Add materials
+
+<Steps>
+  <Step title="Navigate to Settings → Materials">
+    Add the materials you use in your products.
+  </Step>
+  <Step title="Create material entries">
+    ```typescript
+    {
+      name: "Organic Cotton",
+      recyclable: true,
+      country_of_origin: "IN"
+    }
+    ```
+  </Step>
+</Steps>
+
+### Add supply chain operators
+
+Navigate to **Settings** → **Operators** and add facilities involved in your supply chain:
+
+- Fabric mills
+- Dyeing facilities  
+- Cut and sew factories
+- Finishing facilities
+
+## Step 3: Create your first product
+
+<Steps>
+  <Step title="Navigate to Passports">
+    From the main navigation, click **Passports** to view your product catalog.
+  </Step>
+  <Step title="Click 'Create product'">
+    This opens the product creation form with multiple sections:
     
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
-
-### Step 2: Deploy your changes
-
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
+    - **Basic info**: Name, description, category, season
+    - **Organization**: Manufacturer selection
+    - **Materials**: Composition percentages
+    - **Journey**: Supply chain steps
+    - **Environment**: Carbon and water impact
+  </Step>
+  <Step title="Fill in basic information">
+    ```typescript
+    {
+      name: "Classic Organic Tee",
+      description: "A timeless t-shirt made from 100% organic cotton",
+      category_id: "...", // Select from taxonomy
+      manufacturer_id: "...", // Select from your manufacturers
+      product_handle: "classic-organic-tee" // Auto-generated if not provided
+    }
+    ```
     
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
+    <Note>
+      The `product_handle` is a URL-friendly identifier unique to your brand. It will be used in your DPP URLs.
+    </Note>
+  </Step>
+  <Step title="Add materials">
+    Click **Add material** and select from your brand materials:
+    
+    ```typescript
+    materials: [
+      {
+        brand_material_id: "...",
+        percentage: 100
+      }
+    ]
+    ```
+  </Step>
+  <Step title="Define supply chain journey">
+    Add the production steps in order:
+    
+    ```typescript
+    journey_steps: [
+      {
+        sort_index: 0,
+        step_type: "Fabric Production",
+        operator_ids: ["..."]
+      },
+      {
+        sort_index: 1,
+        step_type: "Dyeing",
+        operator_ids: ["..."]
+      },
+      {
+        sort_index: 2,
+        step_type: "Cut & Sew",
+        operator_ids: ["..."]
+      }
+    ]
+    ```
+  </Step>
+  <Step title="Add environmental data (optional)">
+    If you have impact data:
+    
+    ```typescript
+    environment: {
+      carbon_kg_co2e: 2.5,
+      water_liters: 2700
+    }
+    ```
+  </Step>
+  <Step title="Save the product">
+    Click **Save** to create your product. It will be saved with status `unpublished`.
+  </Step>
+</Steps>
 
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
+## Step 4: Add product variants
 
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
+Products can have multiple variants (e.g., different colors or sizes).
 
-### Step 3: Go live
+<Steps>
+  <Step title="Navigate to Variants section">
+    Within your product form, scroll to the **Variants** section.
+  </Step>
+  <Step title="Define variant attributes">
+    First, set up attributes in **Settings** → **Attributes**:
+    
+    - Create attribute: "Color" with values: Black, White, Navy
+    - Create attribute: "Size" with values: S, M, L, XL
+  </Step>
+  <Step title="Create variants">
+    Click **Add variant** and select attribute values:
+    
+    ```typescript
+    {
+      attribute_value_ids: [
+        "color-black-id",
+        "size-medium-id"
+      ],
+      sku: "TOT-BLK-M",
+      barcode: "1234567890123"
+    }
+    ```
+    
+    Each variant can have its own SKU and barcode.
+  </Step>
+</Steps>
 
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
+<Info>
+  You can also generate variants automatically using the matrix mode, which creates all combinations of selected attributes.
+</Info>
+
+## Step 5: Publish your first DPP
+
+Once your product is ready, publish it to generate Digital Product Passports.
+
+<Steps>
+  <Step title="Set product status to published">
+    In the product form sidebar, change **Status** from `unpublished` to `published`.
+    
+    <Warning>
+      Only products with status `published` will be visible to the public via their passport URLs.
+    </Warning>
+  </Step>
+  <Step title="Publish the product">
+    Click **Publish** in the product detail view. This triggers the publishing process:
+    
+    ```typescript
+    // Publishing creates:
+    // 1. A product_passport record with a unique UPID for each variant
+    // 2. A product_passport_version with immutable JSON-LD snapshot
+    // 3. QR codes linking to passport.avelero.com/{upid}
+    ```
+  </Step>
+  <Step title="Publishing happens for all variants">
+    The publish action:
+    
+    - Creates a passport for each variant (if it doesn't exist)
+    - Generates a 16-character UPID for new passports
+    - Creates an immutable version snapshot with:
+      - Current product data
+      - Material composition
+      - Supply chain information
+      - Environmental impact
+      - Manufacturer details
+    - Increments the version number for updates
+  </Step>
+</Steps>
+
+<Note>
+  Passports are immutable once published. If you update the product later and republish, a new version is created while previous versions remain accessible in the version history.
+</Note>
+
+## Step 6: View your DPP
+
+After publishing, you can view the public passport.
+
+<Steps>
+  <Step title="Get the passport URL">
+    Each variant now has a UPID. The public URL format is:
+    
+    ```
+    https://passport.avelero.com/{upid}
+    ```
+    
+    Example: `https://passport.avelero.com/771Gh4J11gLj345m`
+  </Step>
+  <Step title="View the passport">
+    Open the URL in your browser to see the public-facing DPP with:
+    
+    - Product name and image
+    - Variant attributes (color, size, etc.)
+    - Material composition with percentages
+    - Supply chain journey map
+    - Environmental impact metrics
+    - Manufacturer and operator details
+    - Certifications (if added)
+  </Step>
+  <Step title="Download QR codes">
+    From the product detail page, download QR codes for each variant to print on:
+    
+    - Product tags
+    - Packaging
+    - Care labels
+  </Step>
+</Steps>
+
+## Understanding the data model
+
+```typescript
+// Product (working layer - editable)
+Product {
+  id: string
+  name: string
+  product_handle: string // URL-friendly identifier
+  status: 'published' | 'unpublished' | 'scheduled'
+  manufacturer_id: string
+}
+
+// Product Variant (working layer - editable)
+ProductVariant {
+  id: string
+  product_id: string
+  upid: string | null // Generated on first publish
+  sku: string
+  barcode: string
+  attribute_value_ids: string[] // Links to brand attributes
+}
+
+// Product Passport (publishing layer - permanent)
+ProductPassport {
+  id: string
+  upid: string // Permanent 16-char identifier
+  working_variant_id: string | null
+  current_version_id: string
+  status: 'active' | 'orphaned'
+  first_published_at: string
+}
+
+// Passport Version (immutable snapshot)
+ProductPassportVersion {
+  id: string
+  passport_id: string
+  version_number: number
+  content_json: object // Complete JSON-LD snapshot
+  published_at: string
+  content_hash: string // For deduplication
+}
+```
 
 ## Next steps
 
-Now that you have your docs running, explore these key features:
-
 <CardGroup cols={2}>
-
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
-
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
-
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
-
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
-
+  <Card
+    title="Customize passport theme"
+    icon="palette"
+    href="/guides/theming-and-branding"
+  >
+    Brand your passports with custom colors, fonts, and logos
+  </Card>
+  <Card
+    title="Bulk import products"
+    icon="file-import"
+    href="/integrations/bulk-import-export"
+  >
+    Import hundreds of products from CSV or Excel
+  </Card>
+  <Card
+    title="Connect Shopify"
+    icon="shopify"
+    href="/integrations/shopify"
+  >
+    Automatically sync products from your Shopify store
+  </Card>
+  <Card
+    title="API integration"
+    icon="code"
+    href="/api/introduction"
+  >
+    Build custom workflows with the Avelero API
+  </Card>
 </CardGroup>
-
-<Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
-</Note>

@@ -1,0 +1,263 @@
+---
+title: Supply chain traceability
+description: Map your product's journey from raw materials to finished goods with detailed operator information and production step tracking.
+---
+
+Supply chain traceability allows you to document every step in your product's manufacturing journey, providing transparency about where and how your products are made.
+
+## Why traceability matters
+
+Transparent supply chains are increasingly important:
+
+- **Regulatory compliance**: EU regulations require supply chain disclosure for many product categories
+- **Consumer trust**: Customers want to know where products come from and how they're made
+- **Brand differentiation**: Showcase your ethical manufacturing practices
+- **Risk management**: Understand your supply chain to identify potential issues
+
+## Journey structure
+
+The supply chain journey is represented as a sequence of production steps:
+
+### Production steps
+
+Each step represents a stage in manufacturing:
+
+- Cutting
+- Sewing
+- Dyeing
+- Printing
+- Finishing
+- Assembly
+- Packaging
+- Custom steps specific to your process
+
+Steps are ordered sequentially to reflect the actual production flow.
+
+### Operators
+
+Operators are the facilities or companies performing each step:
+
+- Factory name and legal entity
+- Complete address information
+- Contact details (email, phone, website)
+- Country location for geographic tracking
+
+Multiple operators can be assigned to a single step if production happens at multiple facilities.
+
+## Setting up your operator catalog
+
+Before mapping product journeys, you need to define your operators:
+
+<Steps>
+  <Step title="Navigate to operators">
+    Access your brand's operator catalog from the settings or catalog section.
+  </Step>
+  
+  <Step title="Add operator details">
+    For each facility or partner in your supply chain, create an operator record with:
+    
+    - Display name (how it appears on passports)
+    - Legal name (official company name)
+    - Full address (street, city, state, postal code, country)
+    - Contact information (email, phone, website)
+  </Step>
+  
+  <Step title="Organize operators">
+    Tag or categorize operators by capability, region, or relationship type for easier management.
+  </Step>
+</Steps>
+
+<Note>
+  Operator information is stored at the brand level, meaning you define each facility once and can reuse it across multiple products.
+</Note>
+
+## Mapping product journeys
+
+Once your operator catalog is set up, you can map the journey for each product:
+
+### Manual journey mapping
+
+For individual products:
+
+<Steps>
+  <Step title="Open product editor">
+    Navigate to the product you want to map and open the journey section.
+  </Step>
+  
+  <Step title="Add production steps">
+    Add steps in the order they occur during manufacturing. For example:
+    
+    1. Cutting
+    2. Sewing
+    3. Quality control
+    4. Packaging
+  </Step>
+  
+  <Step title="Assign operators">
+    For each step, select one or more operators from your catalog who perform that step.
+  </Step>
+  
+  <Step title="Reorder if needed">
+    Drag and drop steps to adjust the sequence if your process changes.
+  </Step>
+</Steps>
+
+### Bulk import journeys
+
+For multiple products with similar journeys:
+
+- Include journey step data in your bulk import Excel file
+- Specify step type and operator for each step
+- Define step order with sort index numbers
+- Import validates that operators exist in your catalog
+
+### Integration sync
+
+If your manufacturing system tracks production steps:
+
+- Configure field mappings to sync operator data
+- Map external facility IDs to your Avelero operators
+- Journey steps sync automatically with product updates
+
+## Journey display on passports
+
+When a passport is published, the supply chain journey appears in the traceability section:
+
+### Visual journey map
+
+Consumers see an interactive journey display:
+
+- Steps shown in sequential order
+- Operator information for each step
+- Geographic location data when available
+- Visual representation of the production flow
+
+### Operator details
+
+For each operator in the journey, the passport shows:
+
+- Facility name
+- Location (city and country)
+- Contact website (if provided)
+- Additional details based on your disclosure preferences
+
+<Info>
+  You control how much operator information is displayed on public passports through your theme configuration and data completeness.
+</Info>
+
+## Multiple operators per step
+
+Some production steps may occur at multiple facilities:
+
+- A product might be sewn at two different factories
+- Packaging might happen at regional distribution centers
+- Quality control could occur at multiple checkpoints
+
+Avelero supports assigning multiple operators to a single step:
+
+- All operators for that step are displayed on the passport
+- Each operator's location contributes to the geographic map
+- Consumers see the full scope of that production stage
+
+## Operator data management
+
+### Updating operator information
+
+Operator records can be updated at any time:
+
+- Changes to operator details are reflected in new passport publications
+- Previously published passports show operator information as it was at publication time
+- This preserves historical accuracy while allowing updates
+
+### Deleting operators
+
+Operators cannot be deleted if they're currently assigned to products:
+
+- The system prevents deletion to maintain data integrity
+- You must remove the operator from all products first
+- This restriction ensures published passports remain valid
+
+<Accordion title="Why restrict deletion?">
+  Published passports create immutable snapshots that reference operators. If an operator could be deleted while in use, it would break the referential integrity of those snapshots.
+  
+  Instead, remove the operator from all products, then you can safely delete the operator record.
+</Accordion>
+
+## Country of origin tracking
+
+Operator addresses include country codes:
+
+- ISO country codes ensure standardized geographic data
+- Enables filtering and analysis by production region
+- Supports compliance requirements for country-of-origin disclosure
+- Powers geographic visualization on passport pages
+
+## Advanced use cases
+
+### Multi-tier supply chain
+
+For complex supply chains with multiple tiers:
+
+- Create operators for tier 1, tier 2, and tier 3 suppliers
+- Use descriptive step names to indicate supply chain tier
+- Example: "Tier 2 - Fabric Weaving" vs "Tier 1 - Garment Assembly"
+
+### Private label manufacturing
+
+If you manufacture for other brands:
+
+- Each brand account maintains its own operator catalog
+- Brands don't see each other's operator information
+- Shared facilities can be added to multiple brand catalogs separately
+
+### Contract manufacturing
+
+For brands working with contractors:
+
+- Add all contract manufacturers as operators
+- Assign them to the appropriate production steps
+- Include or exclude contractor details from public passports based on your agreements
+
+## Data validation and integrity
+
+### Preventing orphaned data
+
+The system enforces referential integrity:
+
+- Products reference operators through foreign keys
+- Journey steps are automatically deleted when a product is deleted
+- Operators marked as in-use cannot be deleted
+
+### Journey completeness
+
+While journeys are optional, complete journeys improve passport value:
+
+- Products can be published without journey data
+- Incomplete journeys don't block publication
+- Journey section is hidden on passports if no data exists
+
+<Info>
+  Start with basic journey data and add more detail over time. Even partial traceability provides value to consumers.
+</Info>
+
+## Compliance and reporting
+
+Supply chain traceability supports various compliance needs:
+
+### EU ESPR compliance
+
+- Journey data is included in passport JSON-LD exports
+- Operator information follows standardized schema
+- Geographic data enables origin tracking
+
+### Due diligence reporting
+
+- Export journey data for supply chain audits
+- Track production by country or region
+- Identify concentration risks in your supply chain
+
+### Customer inquiries
+
+- Respond quickly to questions about product origin
+- Provide evidence of ethical sourcing claims
+- Support sustainability reporting initiatives

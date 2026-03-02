@@ -1,0 +1,322 @@
+---
+title: Materials and composition
+description: Manage material catalogs, composition percentages, and material certifications in your digital product passports
+---
+
+Materials and composition data is essential for transparency in digital product passports. Avelero helps you build a centralized material catalog and assign accurate composition percentages to products and variants.
+
+## Material catalog
+
+Your brand's material catalog is a centralized repository of all materials used across your products. Materials are created once and reused across your entire catalog.
+
+### Creating materials
+
+Each material in your catalog includes:
+
+- **Name**: Material identifier (e.g., "Organic Cotton", "Recycled Polyester")
+- **Country of origin**: Where the material is sourced
+- **Certification**: Optional link to a material certification
+- **Recyclable status**: Whether the material can be recycled
+
+<Steps>
+  <Step title="Navigate to materials settings">
+    Go to **Settings** → **Materials** to access your material catalog
+  </Step>
+  
+  <Step title="Add a new material">
+    Click **Add material** and enter the material name and properties
+  </Step>
+  
+  <Step title="Link certification (optional)">
+    Associate a certification from your certification catalog if applicable
+  </Step>
+  
+  <Step title="Use in products">
+    The material is now available for assignment to any product or variant
+  </Step>
+</Steps>
+
+<Info>
+Materials are scoped to your brand. Each brand maintains its own material catalog, so materials can be customized to match your specific sourcing and naming conventions.
+</Info>
+
+## Material certifications
+
+Certifications validate material claims and provide transparency to consumers. Each certification includes:
+
+- **Title**: Certification name (e.g., "GOTS Organic", "OEKO-TEX Standard 100")
+- **Certification code**: Unique identifier or certificate number
+- **Institute details**: Certifying organization name, email, website, and address
+- **Issue and expiry dates**: Validity period of the certification
+- **Certificate document**: Upload path for the certification file
+
+<Accordion title="Setting up certifications">
+**Create a certification:**
+
+1. Go to **Settings** → **Certifications**
+2. Add certification details including institute information
+3. Upload the certificate document
+4. Set issue and expiry dates
+
+**Link to materials:**
+
+When creating or editing a material, select the appropriate certification from your catalog. One certification can be linked to multiple materials.
+</Accordion>
+
+<Accordion title="Certification data structure">
+Certifications store comprehensive institute details:
+
+```typescript
+{
+  title: "GOTS Organic Certification",
+  certificationCode: "GOTS-2024-12345",
+  instituteName: "Control Union",
+  instituteEmail: "info@controlunion.com",
+  instituteWebsite: "https://controlunion.com",
+  instituteAddressLine1: "Meeuwenlaan 100",
+  instituteCity: "Amsterdam",
+  instituteCountryCode: "NL",
+  issueDate: "2024-01-15",
+  expiryDate: "2025-01-15",
+  certificationPath: "/uploads/certs/gots-cert.pdf"
+}
+```
+
+All fields are optional except the title, allowing flexibility for different certification types.
+</Accordion>
+
+## Product composition
+
+Composition defines what materials make up a product and in what percentages. You can define composition at either the product or variant level.
+
+### Product-level composition
+
+Set material composition that applies to all variants of a product:
+
+<Steps>
+  <Step title="Open the product editor">
+    Navigate to the product and open the Materials section
+  </Step>
+  
+  <Step title="Add materials">
+    Click **Add material** to add a row to the composition table
+  </Step>
+  
+  <Step title="Select material and percentage">
+    Choose a material from your catalog and enter the percentage (0-100)
+  </Step>
+  
+  <Step title="Add additional materials">
+    Continue adding materials until the composition is complete
+  </Step>
+</Steps>
+
+The materials table shows:
+
+- **Material name**: Selected from your material catalog
+- **Country of origin**: Automatically displayed from the material's data
+- **Percentage**: Composition percentage for this material
+- **Total**: Running total to help you reach 100%
+
+<Note>
+Percentages should total 100% for complete composition data. Avelero displays a warning if the total exceeds 100% but doesn't prevent saving.
+</Note>
+
+### Variant-level composition
+
+Variants can override product-level composition when materials differ between variants:
+
+```
+Product: "Summer Dress"
+├─ Product materials: 60% Cotton, 40% Linen
+├─ Variant: "Blue - Small"
+│  └─ Inherits: 60% Cotton, 40% Linen
+└─ Variant: "Red - Small"
+   └─ Override: 70% Organic Cotton, 30% Recycled Polyester
+```
+
+<Info>
+**Important:** Variant materials completely replace product materials—they don't merge. If you add any materials to a variant, the product's materials are ignored for that variant's digital passport.
+</Info>
+
+## Adding materials in the product form
+
+The materials section in the product editor provides an interactive table interface:
+
+### Material selection
+
+- Click in the Material column to open a searchable dropdown
+- Search existing materials by name
+- Create new materials inline by typing a name not in the catalog
+- Each material can only be added once per product
+
+<Accordion title="Creating materials inline">
+When you type a material name that doesn't exist:
+
+1. A **Create "Material Name"** option appears in the dropdown
+2. Click to open the material creation sheet
+3. Fill in material properties (country of origin, certification, recyclable)
+4. Save to add the material to your catalog and assign it to the product
+5. The percentage you entered is preserved
+
+This workflow lets you build your material catalog without leaving the product editor.
+</Accordion>
+
+### Percentage entry
+
+- Enter percentages as decimal numbers (e.g., `33.5` for 33.5%)
+- The percentage column shows a `%` symbol prefix
+- Empty percentages are stored as `0`
+- Total is calculated and displayed at the bottom
+- Totals over 100% are highlighted in red
+
+### Country display
+
+Country of origin is automatically populated from the material's data:
+
+- Displays as a tag with the full country name
+- Derived from the material's `countryOfOrigin` field
+- Cannot be edited per-product (edit the material in the catalog instead)
+
+## Data validation
+
+Material composition data has specific validation rules:
+
+<Accordion title="Material uniqueness">
+Each material can only appear once in a product's composition:
+
+- Enforced at the database level via unique constraint
+- The UI prevents selecting already-added materials
+- Prevents duplicate materials in the composition table
+</Accordion>
+
+<Accordion title="Material deletion restrictions">
+Materials in use cannot be deleted from the catalog:
+
+- Database enforces `RESTRICT` on delete
+- You must remove the material from all products first
+- Prevents orphaned material references
+</Accordion>
+
+<Accordion title="Percentage precision">
+Percentages are stored with high precision:
+
+```typescript
+percentage: numeric({ precision: 6, scale: 2 })
+// Supports values like 33.33, 12.50, 0.01
+```
+
+This allows accurate composition data down to hundredths of a percent.
+</Accordion>
+
+## Material data structure
+
+Understanding the underlying data model helps you use materials effectively:
+
+### Brand materials table
+
+```typescript
+{
+  id: "uuid",
+  brandId: "uuid",
+  name: "Organic Cotton",
+  certificationId: "uuid | null",
+  recyclable: true,
+  countryOfOrigin: "IN",
+  createdAt: "timestamp",
+  updatedAt: "timestamp"
+}
+```
+
+### Product materials table
+
+```typescript
+{
+  id: "uuid",
+  productId: "uuid",
+  brandMaterialId: "uuid",
+  percentage: 65.00,
+  createdAt: "timestamp",
+  updatedAt: "timestamp"
+}
+```
+
+### Variant materials table
+
+```typescript
+{
+  id: "uuid",
+  variantId: "uuid",
+  brandMaterialId: "uuid",
+  percentage: 70.50,
+  sourceIntegration: "shopify | null",
+  sourceExternalId: "external-id | null",
+  createdAt: "timestamp"
+}
+```
+
+<Note>
+Variant materials include source tracking fields to maintain data lineage when syncing with external systems.
+</Note>
+
+## Best practices
+
+<Steps>
+  <Step title="Build your catalog first">
+    Create commonly used materials in your catalog before adding products. This speeds up product creation.
+  </Step>
+  
+  <Step title="Use consistent naming">
+    Standardize material names across your catalog (e.g., always "Recycled Polyester" not "Rec. Polyester").
+  </Step>
+  
+  <Step title="Complete certification data">
+    Add full certification details including expiry dates. This builds consumer trust.
+  </Step>
+  
+  <Step title="Aim for 100% composition">
+    Strive for complete composition data. Partial data reduces transparency.
+  </Step>
+  
+  <Step title="Use variant overrides sparingly">
+    Only override at the variant level when materials actually differ. Over-use makes data harder to maintain.
+  </Step>
+  
+  <Step title="Review country of origin data">
+    Country of origin appears in digital passports. Ensure it's accurate and up to date.
+  </Step>
+</Steps>
+
+## Common workflows
+
+<Accordion title="Adding a new material to multiple products">
+1. Create the material in **Settings** → **Materials**
+2. Open each product that uses this material
+3. Add the material and percentage in the Materials section
+4. Save the product
+
+The material data (country, certification) is automatically included.
+</Accordion>
+
+<Accordion title="Updating a certification">
+1. Go to **Settings** → **Certifications**
+2. Edit the certification (e.g., update expiry date)
+3. Save changes
+
+All materials linked to this certification automatically reflect the update across all products.
+</Accordion>
+
+<Accordion title="Handling multi-component products">
+For products with multiple components (e.g., a jacket with shell and lining):
+
+**Option 1:** Weighted average composition
+Calculate overall percentages and list materials once:
+- 50% Recycled Polyester (shell)
+- 30% Organic Cotton (lining)
+- 20% Recycled Down (insulation)
+
+**Option 2:** Variant-level composition
+Create variants for major components and use variant overrides:
+- Variant: "Shell" → 100% Recycled Polyester
+- Variant: "Lining" → 100% Organic Cotton
+</Accordion>

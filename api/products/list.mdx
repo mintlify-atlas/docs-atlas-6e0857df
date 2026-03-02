@@ -1,0 +1,486 @@
+---
+title: List products
+description: Query and filter products with advanced filtering, search, and pagination
+---
+
+Retrieve a paginated list of products from your catalog with support for filtering, searching, and sorting.
+
+## Endpoint
+
+```typescript
+trpc.products.list.query(input)
+```
+
+**Router location**: `apps/api/src/trpc/routers/products/index.ts:233`
+
+## Request parameters
+
+<ParamField path="brand_id" type="string">
+  UUID of the brand. Must match the active brand context if provided.
+</ParamField>
+
+<ParamField path="cursor" type="string">
+  Cursor for pagination. Obtained from the previous response's `meta.cursor` field.
+</ParamField>
+
+<ParamField path="limit" type="number">
+  Number of products to return per page.
+  
+  **Range**: 1-100
+  
+  **Default**: 50
+</ParamField>
+
+<ParamField path="fields" type="string[]">
+  Array of field names to return. If omitted, all available fields are returned.
+  
+  **Available fields**:
+  - `id`
+  - `name`
+  - `description`
+  - `brand_id`
+  - `category_id`
+  - `season_id`
+  - `manufacturer_id`
+  - `image_path`
+  - `product_handle`
+  - `upid`
+  - `status`
+  - `created_at`
+  - `updated_at`
+</ParamField>
+
+<ParamField path="search" type="string">
+  Search query to filter products by name, description, or other text fields.
+  
+  **Max length**: 100 characters
+</ParamField>
+
+<ParamField path="includeVariants" type="boolean">
+  Include product variants in the response.
+  
+  **Default**: `false`
+</ParamField>
+
+<ParamField path="includeAttributes" type="boolean">
+  Include product attributes (materials, environment, etc.) in the response.
+  
+  **Default**: `false`
+</ParamField>
+
+### Filtering
+
+<ParamField path="filters" type="object">
+  Advanced filtering using `FilterState` structure. Groups are combined with AND logic, conditions within groups are combined with OR logic.
+  
+  <Expandable title="FilterState structure">
+    ```typescript
+    {
+      groups: [
+        {
+          id: "group-1",
+          conditions: [
+            {
+              id: "condition-1",
+              fieldId: "status",
+              operator: "equals",
+              value: "published"
+            },
+            {
+              id: "condition-2",
+              fieldId: "category",
+              operator: "in",
+              value: ["uuid-1", "uuid-2"]
+            }
+          ],
+          asGroup: true
+        }
+      ]
+    }
+    ```
+    
+    **Filter operators**:
+    - `equals`, `notEquals`
+    - `in`, `notIn`
+    - `contains`, `notContains`
+    - `startsWith`, `endsWith`
+    - `greaterThan`, `lessThan`
+    - `greaterThanOrEqual`, `lessThanOrEqual`
+    - `isEmpty`, `isNotEmpty`
+    
+    **Filter value types**:
+    - String
+    - Number
+    - Boolean
+    - Array of strings
+    - Date range: `{ after: "2024-01-01", before: "2024-12-31" }`
+    - Number range: `{ min: 0, max: 100 }`
+    - Relative date: `{ type: "relative", option: "last 7 days" }`
+  </Expandable>
+</ParamField>
+
+### Sorting
+
+<ParamField path="sort" type="object">
+  Sort configuration
+  
+  <Expandable title="Sort properties">
+    <ParamField path="field" type="string" required>
+      Field to sort by
+      
+      **Options**:
+      - `name`
+      - `status`
+      - `createdAt`
+      - `updatedAt`
+      - `category`
+      - `season`
+      - `productHandle`
+    </ParamField>
+    
+    <ParamField path="direction" type="string">
+      Sort direction
+      
+      **Options**: `"asc"` or `"desc"`
+      
+      **Default**: `"desc"`
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+## Response
+
+<ResponseField name="data" type="array">
+  Array of product objects
+</ResponseField>
+
+<ResponseField name="meta" type="object">
+  Pagination metadata
+  
+  <Expandable title="Metadata properties">
+    <ResponseField name="total" type="number">
+      Total number of products matching the query
+    </ResponseField>
+    
+    <ResponseField name="cursor" type="string | null">
+      Cursor for fetching the next page. `null` if no more pages.
+    </ResponseField>
+    
+    <ResponseField name="hasMore" type="boolean">
+      Whether more products are available
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Example requests
+
+### Basic list
+
+```typescript
+const products = await trpc.products.list.query({
+  limit: 20
+});
+
+console.log(products.data.length); // Up to 20 products
+console.log(products.meta.total); // Total matching products
+console.log(products.meta.hasMore); // true if more pages available
+```
+
+### With pagination
+
+```typescript
+// First page
+const firstPage = await trpc.products.list.query({
+  limit: 50
+});
+
+// Next page
+if (firstPage.meta.hasMore) {
+  const secondPage = await trpc.products.list.query({
+    cursor: firstPage.meta.cursor,
+    limit: 50
+  });
+}
+```
+
+### With search
+
+```typescript
+const products = await trpc.products.list.query({
+  search: "cotton",
+  limit: 20
+});
+// Returns products with "cotton" in name, description, etc.
+```
+
+### With filters
+
+```typescript
+const publishedProducts = await trpc.products.list.query({
+  filters: {
+    groups: [
+      {
+        id: "status-filter",
+        conditions: [
+          {
+            id: "cond-1",
+            fieldId: "status",
+            operator: "equals",
+            value: "published"
+          }
+        ]
+      }
+    ]
+  }
+});
+```
+
+### Multiple filter conditions (OR logic)
+
+```typescript
+const products = await trpc.products.list.query({
+  filters: {
+    groups: [
+      {
+        id: "category-filter",
+        conditions: [
+          // Products in category A OR category B
+          {
+            id: "cond-1",
+            fieldId: "category_id",
+            operator: "equals",
+            value: "category-a-uuid"
+          },
+          {
+            id: "cond-2",
+            fieldId: "category_id",
+            operator: "equals",
+            value: "category-b-uuid"
+          }
+        ]
+      }
+    ]
+  }
+});
+```
+
+### Multiple filter groups (AND logic)
+
+```typescript
+const products = await trpc.products.list.query({
+  filters: {
+    groups: [
+      {
+        id: "status-group",
+        conditions: [
+          {
+            id: "status-cond",
+            fieldId: "status",
+            operator: "equals",
+            value: "published"
+          }
+        ]
+      },
+      {
+        id: "date-group",
+        conditions: [
+          {
+            id: "date-cond",
+            fieldId: "created_at",
+            operator: "greaterThan",
+            value: { after: "2024-01-01" }
+          }
+        ]
+      }
+    ]
+  }
+});
+// Returns products that are published AND created after 2024-01-01
+```
+
+### With sorting
+
+```typescript
+const products = await trpc.products.list.query({
+  sort: {
+    field: "createdAt",
+    direction: "desc"
+  },
+  limit: 20
+});
+// Returns 20 most recently created products
+```
+
+### With variants and attributes
+
+```typescript
+const products = await trpc.products.list.query({
+  includeVariants: true,
+  includeAttributes: true,
+  limit: 10
+});
+
+// Each product includes:
+// - variants: Array of variant objects with SKU, barcode, etc.
+// - materials: Array of material compositions
+// - environment: Environmental impact data
+// - journeySteps: Production journey
+```
+
+### Field selection
+
+```typescript
+const products = await trpc.products.list.query({
+  fields: ["id", "name", "product_handle", "status"],
+  limit: 100
+});
+// Returns only specified fields (more efficient for large lists)
+```
+
+### Complex query
+
+```typescript
+const products = await trpc.products.list.query({
+  search: "organic",
+  filters: {
+    groups: [
+      {
+        id: "status-group",
+        conditions: [
+          {
+            id: "status-cond",
+            fieldId: "status",
+            operator: "equals",
+            value: "published"
+          }
+        ]
+      },
+      {
+        id: "season-group",
+        conditions: [
+          {
+            id: "season-cond",
+            fieldId: "season_id",
+            operator: "in",
+            value: ["spring-2024", "summer-2024"]
+          }
+        ]
+      }
+    ]
+  },
+  sort: {
+    field: "name",
+    direction: "asc"
+  },
+  limit: 50,
+  includeVariants: true
+});
+```
+
+## Date range filters
+
+```typescript
+// Products created in 2024
+const products = await trpc.products.list.query({
+  filters: {
+    groups: [
+      {
+        id: "date-range",
+        conditions: [
+          {
+            id: "created-2024",
+            fieldId: "created_at",
+            operator: "between",
+            value: {
+              after: "2024-01-01T00:00:00Z",
+              before: "2024-12-31T23:59:59Z"
+            }
+          }
+        ]
+      }
+    ]
+  }
+});
+```
+
+## Relative date filters
+
+```typescript
+// Products created in the last 7 days
+const products = await trpc.products.list.query({
+  filters: {
+    groups: [
+      {
+        id: "recent",
+        conditions: [
+          {
+            id: "last-week",
+            fieldId: "created_at",
+            operator: "relative",
+            value: {
+              type: "relative",
+              option: "last 7 days"
+            }
+          }
+        ]
+      }
+    ]
+  }
+});
+```
+
+**Available relative options**:
+- `today`
+- `yesterday`
+- `last 7 days`
+- `last 30 days`
+- `this month`
+- `last month`
+- `this quarter`
+- `this year`
+- `more than X days ago` (with `customDays` field)
+
+## Performance optimization
+
+<Note>
+  Use `includeVariants` and `includeAttributes` only when needed. These flags trigger additional database queries and can impact performance for large result sets.
+</Note>
+
+<Note>
+  Use field selection to return only the data you need. This reduces response size and improves query performance.
+</Note>
+
+```typescript
+// Efficient query for dropdown lists
+const products = await trpc.products.list.query({
+  fields: ["id", "name", "product_handle"],
+  limit: 100
+});
+```
+
+## Error codes
+
+<ResponseField name="BAD_REQUEST" type="error">
+  Invalid input or validation error
+  
+  **Common causes**:
+  - `limit` exceeds 100
+  - Invalid field name in `fields` array
+  - Active brand does not match `brand_id`
+  - Invalid filter structure
+  - Invalid sort field
+</ResponseField>
+
+## Validation rules
+
+- **limit**: 1-100 (default: 50)
+- **search**: Max 100 characters
+- **fields**: Must be valid product field names from `PRODUCT_FIELDS`
+- **brand_id**: Must match active brand context if provided
+
+## Source code reference
+
+- **Schema definition**: `apps/api/src/schemas/products.ts:519` (`productsDomainListSchema`)
+- **Implementation**: `apps/api/src/trpc/routers/products/index.ts:233`
+- **Database query**: `@v1/db/queries/products` (`listProductsWithIncludes`)
+- **Available fields**: `apps/api/src/schemas/products.ts:45` (`PRODUCT_FIELDS`)

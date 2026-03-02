@@ -1,0 +1,590 @@
+---
+title: Webhooks
+description: Understand Shopify webhook handling, GDPR compliance webhooks, and HMAC verification for secure webhook processing in Avelero
+---
+
+Avelero handles webhooks from integrated platforms to keep data synchronized and comply with platform requirements. This guide covers Shopify webhooks, GDPR compliance handling, and webhook security.
+
+## Shopify webhooks
+
+Shopify sends webhooks to Avelero for GDPR compliance and data management.
+
+### Mandatory compliance webhooks
+
+Shopify requires all apps to handle three compliance webhooks:
+
+<AccordionGroup>
+  <Accordion title="customers/data_request">
+    **Purpose:** Triggered when a customer requests their data from a Shopify store.
+    
+    **Avelero's handling:** No action taken. Avelero only has `read_products` scope and does not store any customer data.
+    
+    **Response:** 200 OK (acknowledges receipt)
+    
+    **Payload structure:**
+    ```json
+    {
+      "shop_id": 12345,
+      "shop_domain": "example.myshopify.com",
+      "customer": {
+        "id": 67890,
+        "email": "customer@example.com",
+        "phone": "+1234567890"
+      },
+      "orders_requested": [1, 2, 3],
+      "data_request": {
+        "id": 111
+      }
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="customers/redact">
+    **Purpose:** Triggered when a store owner requests customer data deletion (GDPR right to erasure).
+    
+    **Avelero's handling:** No action taken. Avelero does not store customer data.
+    
+    **Response:** 200 OK (acknowledges receipt)
+    
+    **Payload structure:**
+    ```json
+    {
+      "shop_id": 12345,
+      "shop_domain": "example.myshopify.com",
+      "customer": {
+        "id": 67890,
+        "email": "customer@example.com",
+        "phone": "+1234567890"
+      },
+      "orders_to_redact": [1, 2, 3]
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="shop/redact">
+    **Purpose:** Sent 48 hours after a store uninstalls the Avelero app. Requires deletion of all shop data.
+    
+    **Avelero's handling:**
+    - Deletes brand integration record for the shop
+    - Deletes any pending installation records
+    - Product data is retained (belongs to brand, not Shopify)
+    
+    **Response:** 200 OK (even if deletion fails to prevent retry)
+    
+    **Payload structure:**
+    ```json
+    {
+      "shop_id": 12345,
+      "shop_domain": "example.myshopify.com"
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Webhook endpoint
+
+All Shopify compliance webhooks are sent to a unified endpoint:
+
+```
+POST https://api.avelero.com/integrations/webhooks/compliance
+```
+
+**Routing:** The `X-Shopify-Topic` header determines which handler processes the webhook.
+
+### Webhook headers
+
+Shopify includes several headers with webhook requests:
+
+<ResponseField name="X-Shopify-Topic" type="string" required>
+  Webhook topic (e.g., `customers/data_request`, `shop/redact`)
+</ResponseField>
+
+<ResponseField name="X-Shopify-Hmac-Sha256" type="string" required>
+  HMAC signature for verifying webhook authenticity (base64-encoded)
+</ResponseField>
+
+<ResponseField name="X-Shopify-Shop-Domain" type="string">
+  Shop domain that triggered the webhook
+</ResponseField>
+
+<ResponseField name="X-Shopify-API-Version" type="string">
+  Shopify API version used to generate the webhook
+</ResponseField>
+
+<ResponseField name="Content-Type" type="string" required>
+  Always `application/json` for compliance webhooks
+</ResponseField>
+
+## HMAC verification
+
+All Shopify webhooks must be verified to prevent spoofing and replay attacks.
+
+### How HMAC works
+
+Shopify signs webhooks using HMAC-SHA256:
+
+1. **Shopify** generates a hash of the raw request body using the app's client secret
+2. **Shopify** base64-encodes the hash and includes it in the `X-Shopify-Hmac-Sha256` header
+3. **Avelero** receives the webhook and recomputes the hash using the same secret
+4. **Avelero** compares the computed hash to the header value
+5. If hashes match, the webhook is authentic; otherwise, it's rejected
+
+### HMAC verification implementation
+
+Avelero verifies all incoming Shopify webhooks:
+
+```typescript Verification function
+import { createHmac } from 'crypto';
+
+function verifyShopifyWebhookHmac(
+  rawBody: string,
+  hmacHeader: string,
+  clientSecret: string
+): boolean {
+  const hash = createHmac('sha256', clientSecret)
+    .update(rawBody, 'utf8')
+    .digest('base64');
+  
+  return hash === hmacHeader;
+}
+```
+
+**Key points:**
+- Use the **raw request body** (before JSON parsing)
+- Hash encoding is **base64** (not hex)
+- Use **client secret** (not access token)
+- Comparison must be **constant-time** to prevent timing attacks
+
+### Verification flow
+
+Avelero's webhook handler verifies requests before processing:
+
+<Steps>
+  <Step title="Check Content-Type">
+    Ensure `Content-Type` is `application/json`.
+  </Step>
+  
+  <Step title="Extract HMAC header">
+    Get `X-Shopify-Hmac-Sha256` header value.
+  </Step>
+  
+  <Step title="Validate secret is configured">
+    Ensure `SHOPIFY_CLIENT_SECRET` environment variable is set.
+  </Step>
+  
+  <Step title="Get raw body">
+    Capture the raw request body as a string (before parsing).
+  </Step>
+  
+  <Step title="Compute HMAC">
+    Generate HMAC-SHA256 hash of raw body using client secret.
+  </Step>
+  
+  <Step title="Compare hashes">
+    Use constant-time comparison to check if computed hash matches header.
+  </Step>
+  
+  <Step title="Respond appropriately">
+    - **Valid:** Process webhook and return 200 OK
+    - **Invalid:** Return 401 Unauthorized (do not process)
+  </Step>
+</Steps>
+
+### HMAC verification errors
+
+<AccordionGroup>
+  <Accordion title="Missing HMAC header">
+    **Status:** 401 Unauthorized
+    
+    **Cause:** Request doesn't include `X-Shopify-Hmac-Sha256` header.
+    
+    **Resolution:** This indicates a spoofed request. Reject it.
+  </Accordion>
+  
+  <Accordion title="Invalid HMAC signature">
+    **Status:** 401 Unauthorized
+    
+    **Cause:** Computed hash doesn't match header value.
+    
+    **Possible reasons:**
+    - Wrong client secret configured
+    - Request body was modified in transit
+    - Replay attack attempt
+    - Request not from Shopify
+    
+    **Resolution:** Reject the webhook. Do not process.
+  </Accordion>
+  
+  <Accordion title="Server configuration error">
+    **Status:** 500 Internal Server Error
+    
+    **Cause:** `SHOPIFY_CLIENT_SECRET` environment variable not configured.
+    
+    **Resolution:** Set the client secret in environment configuration.
+  </Accordion>
+  
+  <Accordion title="Invalid Content-Type">
+    **Status:** 400 Bad Request
+    
+    **Cause:** Content-Type is not `application/json`.
+    
+    **Resolution:** Shopify compliance webhooks are always JSON. Reject non-JSON requests.
+  </Accordion>
+</AccordionGroup>
+
+### Security best practices
+
+<CardGroup cols={2}>
+  <Card title="Always verify HMAC" icon="shield-check">
+    Never process webhooks without HMAC verification. This prevents webhook spoofing and injection attacks.
+  </Card>
+  
+  <Card title="Use raw body" icon="file-code">
+    Compute HMAC using the raw request body before JSON parsing. Body modification invalidates the signature.
+  </Card>
+  
+  <Card title="Protect client secret" icon="key">
+    Store client secret in environment variables, never in code. Rotate secrets if compromised.
+  </Card>
+  
+  <Card title="Constant-time comparison" icon="clock">
+    Use timing-safe comparison to prevent timing attacks that could leak hash information.
+  </Card>
+</CardGroup>
+
+## Webhook handler implementation
+
+### Unified handler
+
+Avelero uses a single endpoint for all compliance webhooks:
+
+```typescript Webhook router
+import { Hono } from 'hono';
+import { verifyShopifyWebhookHmac } from '@v1/integrations';
+
+const webhooksRouter = new Hono();
+
+webhooksRouter.post('/', async (c) => {
+  // Get topic from header
+  const topic = c.req.header('x-shopify-topic');
+  
+  if (!topic) {
+    return c.json({ error: 'Missing X-Shopify-Topic header' }, 400);
+  }
+  
+  // Verify HMAC
+  const result = await verifyAndParseWebhook(c);
+  if (!result.success) return result.response;
+  
+  // Route based on topic
+  switch (topic) {
+    case 'customers/data_request':
+      return handleCustomersDataRequest(c, result.payload);
+    case 'customers/redact':
+      return handleCustomersRedact(c, result.payload);
+    case 'shop/redact':
+      return handleShopRedact(c, result.payload);
+    default:
+      return c.json({ error: 'Unknown webhook topic' }, 400);
+  }
+});
+```
+
+### Error handling
+
+Webhook handlers must handle errors gracefully:
+
+**Return 200 OK even on errors:**
+- Prevents Shopify from retrying (compliance webhooks don't need retry)
+- Logs errors for debugging without blocking Shopify
+
+```typescript Error handling example
+async function handleShopRedact(payload) {
+  try {
+    await deleteBrandIntegration(payload.shop_domain);
+  } catch (error) {
+    console.error('Failed to delete integration:', error);
+    // Still return 200 to prevent retry
+  }
+  
+  return new Response(JSON.stringify({ success: true }), {
+    status: 200
+  });
+}
+```
+
+## shop/redact implementation
+
+The `shop/redact` webhook requires special handling:
+
+### Data deletion logic
+
+<Steps>
+  <Step title="Identify shop">
+    Extract `shop_domain` from webhook payload.
+  </Step>
+  
+  <Step title="Delete brand integration">
+    Remove the `brand_integrations` record for this shop.
+    
+    ```typescript
+    const deleted = await deleteBrandIntegrationByShopDomain(
+      db,
+      payload.shop_domain
+    );
+    ```
+  </Step>
+  
+  <Step title="Delete pending installations">
+    Remove any `pending_installations` records for this shop.
+    
+    ```typescript
+    await deletePendingInstallation(db, payload.shop_domain);
+    ```
+  </Step>
+  
+  <Step title="Retain product data">
+    **Important:** Do not delete products. Product data belongs to the brand, not the Shopify integration.
+  </Step>
+</Steps>
+
+### What gets deleted
+
+<ResponseField name="brand_integrations" type="record">
+  Integration connection record linking brand to Shopify shop
+</ResponseField>
+
+<ResponseField name="pending_installations" type="record">
+  Pending OAuth installations not yet claimed
+</ResponseField>
+
+<ResponseField name="integration_credentials" type="encrypted">
+  Shopify access tokens (cascade delete via foreign key)
+</ResponseField>
+
+### What gets retained
+
+<ResponseField name="products" type="records">
+  All product records remain in Avelero
+</ResponseField>
+
+<ResponseField name="product_variants" type="records">
+  Variant data is preserved for compliance and history
+</ResponseField>
+
+<ResponseField name="entity_links" type="records">
+  Links between Shopify entities and Avelero entities (orphaned but not deleted)
+</ResponseField>
+
+<Info>
+Product data is retained because it represents the brand's catalog and may be required for regulatory compliance. The integration is removed, but the data persists.
+</Info>
+
+## Testing webhooks
+
+Shopify provides tools for testing webhook handling:
+
+### Using Shopify CLI
+
+```bash Trigger test webhook
+shopify webhook trigger --topic=shop/redact \
+  --api-version=2025-01 \
+  --delivery-method=http \
+  --address=https://api.avelero.com/integrations/webhooks/compliance
+```
+
+### Manual testing
+
+Generate a valid HMAC signature for testing:
+
+```typescript Generate test HMAC
+import { createHmac } from 'crypto';
+
+const payload = JSON.stringify({
+  shop_id: 12345,
+  shop_domain: 'test-store.myshopify.com'
+});
+
+const hmac = createHmac('sha256', process.env.SHOPIFY_CLIENT_SECRET)
+  .update(payload, 'utf8')
+  .digest('base64');
+
+console.log('HMAC:', hmac);
+```
+
+Use the generated HMAC in the `X-Shopify-Hmac-Sha256` header.
+
+### Validation checklist
+
+<AccordionGroup>
+  <Accordion title="Valid webhook is accepted">
+    - Generate valid HMAC signature
+    - Send POST request with correct headers
+    - Verify response is 200 OK
+    - Check logs confirm processing
+  </Accordion>
+  
+  <Accordion title="Invalid HMAC is rejected">
+    - Send request with wrong HMAC
+    - Verify response is 401 Unauthorized
+    - Confirm webhook is not processed
+  </Accordion>
+  
+  <Accordion title="Missing header is rejected">
+    - Send request without `X-Shopify-Hmac-Sha256`
+    - Verify response is 401 Unauthorized
+  </Accordion>
+  
+  <Accordion title="shop/redact deletes data">
+    - Send valid `shop/redact` webhook
+    - Verify integration record is deleted
+    - Confirm products are retained
+  </Accordion>
+</AccordionGroup>
+
+## Webhook retry behavior
+
+Shopify's webhook retry policy:
+
+- **First attempt:** Immediate
+- **Retry attempts:** Up to 19 retries over 48 hours
+- **Backoff:** Exponential backoff between retries
+- **Success criteria:** HTTP 200-299 response
+
+**Avelero's approach:**
+- Always return 200 OK for compliance webhooks
+- Log errors internally without failing the webhook
+- Prevents unnecessary retries for intentional no-ops
+
+## Security considerations
+
+### Webhook spoofing prevention
+
+<Steps>
+  <Step title="HMAC verification">
+    Always verify the HMAC signature before processing.
+  </Step>
+  
+  <Step title="Client secret protection">
+    Store client secret in environment variables, not in code or database.
+  </Step>
+  
+  <Step title="HTTPS enforcement">
+    Only accept webhooks over HTTPS to prevent man-in-the-middle attacks.
+  </Step>
+  
+  <Step title="Rate limiting">
+    Implement rate limiting to prevent webhook flooding attacks.
+  </Step>
+</Steps>
+
+### Replay attack prevention
+
+While Shopify webhooks don't include timestamps, Avelero mitigates replay attacks:
+
+- **HMAC verification** ensures request came from Shopify
+- **Idempotent handlers** ensure duplicate webhooks are safe
+- **shop/redact** handler deletes records only if they exist (no error if already deleted)
+
+## Debugging webhooks
+
+When webhooks fail:
+
+### Check logs
+
+Avelero logs webhook activity:
+
+```typescript Webhook logging
+console.log('Shopify webhook:', {
+  topic: headers['x-shopify-topic'],
+  shopDomain: payload.shop_domain,
+  timestamp: new Date().toISOString()
+});
+```
+
+### Common issues
+
+<AccordionGroup>
+  <Accordion title="Webhook never arrives">
+    **Causes:**
+    - Webhook URL not registered in Shopify app settings
+    - Firewall blocking Shopify's IP range
+    - Server not responding to Shopify requests
+    
+    **Debug:**
+    - Check Shopify Partner dashboard webhook settings
+    - Verify endpoint is publicly accessible
+    - Test with curl from external server
+  </Accordion>
+  
+  <Accordion title="HMAC verification always fails">
+    **Causes:**
+    - Wrong client secret configured
+    - Request body modified before verification
+    - Using hex encoding instead of base64
+    
+    **Debug:**
+    - Log computed hash and header hash for comparison
+    - Verify client secret matches Shopify app credentials
+    - Ensure raw body is used (not parsed JSON)
+  </Accordion>
+  
+  <Accordion title="Data not deleted on shop/redact">
+    **Causes:**
+    - Database query error
+    - Shop domain mismatch
+    - Integration already deleted
+    
+    **Debug:**
+    - Check database logs for errors
+    - Verify shop_domain matches database record
+    - Confirm deletion query is executed
+  </Accordion>
+</AccordionGroup>
+
+## API reference
+
+### Webhook endpoint
+
+```
+POST /integrations/webhooks/compliance
+```
+
+**Headers:**
+- `X-Shopify-Topic` (required) - Webhook topic
+- `X-Shopify-Hmac-Sha256` (required) - HMAC signature
+- `Content-Type: application/json` (required)
+
+**Response codes:**
+- `200 OK` - Webhook processed successfully
+- `400 Bad Request` - Missing topic or invalid content type
+- `401 Unauthorized` - Invalid HMAC signature
+- `500 Internal Server Error` - Server configuration error
+
+### Database operations
+
+**Delete integration:**
+```typescript
+import { deleteBrandIntegrationByShopDomain } from '@v1/db/queries/integrations';
+
+const deleted = await deleteBrandIntegrationByShopDomain(db, shopDomain);
+```
+
+**Delete pending installation:**
+```typescript
+import { deletePendingInstallation } from '@v1/db/queries/integrations';
+
+const deleted = await deletePendingInstallation(db, shopDomain);
+```
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Shopify integration" icon="shopify" href="/integrations/shopify">
+    Learn how to set up and configure the Shopify integration.
+  </Card>
+  
+  <Card title="GDPR compliance" icon="shield-check" href="/compliance/data-requirements">
+    Understand data privacy and GDPR compliance in Avelero.
+  </Card>
+</CardGroup>

@@ -1,0 +1,411 @@
+---
+title: Attributes API
+description: Manage brand attributes for product variant dimensions like Color, Size, and Material
+---
+
+Brand attributes are variant dimensions that define how products can vary. Attributes can optionally link to taxonomy attributes for semantic meaning and standardization.
+
+## List attributes
+
+Retrieve all attributes for your brand with usage metrics.
+
+```typescript
+const result = await trpc.catalog.attributes.list.query();
+```
+
+### Response
+
+Returns an array of attributes with metrics:
+
+<ResponseField name="data" type="array" required>
+  Array of attribute objects
+  
+  <ResponseField name="id" type="string" required>
+    Unique identifier (UUID)
+  </ResponseField>
+  
+  <ResponseField name="brandId" type="string" required>
+    Brand that owns this attribute
+  </ResponseField>
+  
+  <ResponseField name="name" type="string" required>
+    Attribute name (e.g., "Color", "Size", "Material")
+  </ResponseField>
+  
+  <ResponseField name="taxonomyAttributeId" type="string | null">
+    Optional link to taxonomy attribute for semantic meaning
+  </ResponseField>
+  
+  <ResponseField name="values_count" type="number" required>
+    Number of attribute values defined for this attribute
+  </ResponseField>
+  
+  <ResponseField name="variants_count" type="number" required>
+    Number of product variants using this attribute
+  </ResponseField>
+  
+  <ResponseField name="createdAt" type="string" required>
+    ISO 8601 timestamp
+  </ResponseField>
+  
+  <ResponseField name="updatedAt" type="string" required>
+    ISO 8601 timestamp
+  </ResponseField>
+</ResponseField>
+
+<Note>
+  The metrics include:
+  - `values_count`: How many options (values) are defined for this dimension
+  - `variants_count`: How many product variants use this attribute
+</Note>
+
+## List attributes with values
+
+Retrieve attributes grouped with their values in a single query.
+
+```typescript
+const result = await trpc.catalog.attributes.listGrouped.query();
+```
+
+### Response
+
+<ResponseField name="data" type="array" required>
+  Array of attributes with nested values
+  
+  <ResponseField name="id" type="string" required>
+    Attribute ID
+  </ResponseField>
+  
+  <ResponseField name="name" type="string" required>
+    Attribute name
+  </ResponseField>
+  
+  <ResponseField name="taxonomyAttributeId" type="string | null">
+    Optional taxonomy link
+  </ResponseField>
+  
+  <ResponseField name="values_count" type="number" required>
+    Number of values for this attribute
+  </ResponseField>
+  
+  <ResponseField name="variants_count" type="number" required>
+    Number of variants using this attribute
+  </ResponseField>
+  
+  <ResponseField name="values" type="array" required>
+    Array of attribute values
+    
+    <ResponseField name="id" type="string" required>
+      Value ID
+    </ResponseField>
+    
+    <ResponseField name="name" type="string" required>
+      Value name (e.g., "Red", "Blue")
+    </ResponseField>
+    
+    <ResponseField name="attributeId" type="string" required>
+      Parent attribute ID
+    </ResponseField>
+    
+    <ResponseField name="taxonomyValueId" type="string | null">
+      Optional taxonomy value link
+    </ResponseField>
+    
+    <ResponseField name="sortOrder" type="number | null">
+      Display order (null values sorted last)
+    </ResponseField>
+    
+    <ResponseField name="variants_count" type="number" required>
+      Number of variants using this value
+    </ResponseField>
+    
+    <ResponseField name="metadata" type="object">
+      Additional JSON metadata
+    </ResponseField>
+    
+    <ResponseField name="createdAt" type="string" required>
+      ISO 8601 timestamp
+    </ResponseField>
+  </ResponseField>
+</ResponseField>
+
+## Create attribute
+
+Create a new brand attribute.
+
+```typescript
+const result = await trpc.catalog.attributes.create.mutate({
+  name: "Size",
+  taxonomy_attribute_id: "550e8400-e29b-41d4-a716-446655440000" // optional
+});
+```
+
+### Request
+
+<ParamField path="name" type="string" required>
+  Attribute name (1-100 characters)
+  
+  Examples: "Color", "Size", "Material", "Fit"
+</ParamField>
+
+<ParamField path="taxonomy_attribute_id" type="string">
+  Optional UUID linking to a taxonomy attribute for standardization
+  
+  When linked, this attribute gains semantic meaning from the taxonomy system.
+</ParamField>
+
+### Response
+
+<ResponseField name="data" type="object" required>
+  <ResponseField name="id" type="string" required>
+    ID of the created attribute
+  </ResponseField>
+</ResponseField>
+
+### Validation rules
+
+- `name` is trimmed and must be 1-100 characters after trimming
+- Attribute names must be unique per brand (case-sensitive)
+- `taxonomy_attribute_id` must be a valid UUID if provided
+
+### Error handling
+
+<CodeGroup>
+```json Duplicate Name
+{
+  "code": "BAD_REQUEST",
+  "message": "An attribute with this name already exists"
+}
+```
+
+```json Invalid UUID
+{
+  "code": "BAD_REQUEST",
+  "message": "Invalid UUID format"
+}
+```
+</CodeGroup>
+
+## Update attribute
+
+Update an existing attribute.
+
+```typescript
+const result = await trpc.catalog.attributes.update.mutate({
+  id: "550e8400-e29b-41d4-a716-446655440000",
+  name: "Product Color"
+});
+```
+
+### Request
+
+<ParamField path="id" type="string" required>
+  Attribute ID (UUID)
+</ParamField>
+
+<ParamField path="name" type="string">
+  New attribute name (1-100 characters)
+</ParamField>
+
+<ParamField path="taxonomy_attribute_id" type="string | null">
+  Update or clear taxonomy link
+  
+  Pass `null` to remove the taxonomy link.
+</ParamField>
+
+### Response
+
+<ResponseField name="data" type="object" required>
+  <ResponseField name="id" type="string" required>
+    ID of the updated attribute
+  </ResponseField>
+</ResponseField>
+
+<Note>
+  Only provided fields are updated. Omitted fields remain unchanged.
+</Note>
+
+### Error handling
+
+<CodeGroup>
+```json Not Found
+{
+  "code": "NOT_FOUND",
+  "message": "attribute with ID '...' not found"
+}
+```
+
+```json Duplicate Name
+{
+  "code": "BAD_REQUEST",
+  "message": "An attribute with this name already exists"
+}
+```
+</CodeGroup>
+
+## Delete attribute
+
+Delete an attribute if it's not in use.
+
+```typescript
+const result = await trpc.catalog.attributes.delete.mutate({
+  id: "550e8400-e29b-41d4-a716-446655440000"
+});
+```
+
+### Request
+
+<ParamField path="id" type="string" required>
+  Attribute ID (UUID)
+</ParamField>
+
+### Response
+
+<ResponseField name="data" type="object" required>
+  <ResponseField name="id" type="string" required>
+    ID of the deleted attribute
+  </ResponseField>
+</ResponseField>
+
+### Business rules
+
+<Warning>
+  Attributes cannot be deleted if they are referenced by any product variants.
+</Warning>
+
+The API performs a reference check before deletion:
+
+1. Counts variant references via `product_variant_attributes` table
+2. If count > 0, deletion is rejected
+3. Otherwise, attribute and all its values are deleted
+
+### Error handling
+
+<CodeGroup>
+```json In Use
+{
+  "code": "BAD_REQUEST",
+  "message": "This attribute can't be deleted because it is referenced on your variants"
+}
+```
+
+```json Not Found
+{
+  "code": "NOT_FOUND",
+  "message": "attribute with ID '...' not found"
+}
+```
+</CodeGroup>
+
+## TypeScript types
+
+All procedures are fully typed when using the tRPC client:
+
+```typescript
+import type { AppRouter } from "@v1/api";
+import { createTRPCClient } from "@trpc/client";
+
+const trpc = createTRPCClient<AppRouter>({
+  // ... config
+});
+
+// Fully typed request and response
+const result = await trpc.catalog.attributes.create.mutate({
+  name: "Size",
+  taxonomy_attribute_id: "..."
+});
+// result.data.id is typed as string
+
+// Type inference for list results
+const list = await trpc.catalog.attributes.list.query();
+// list.data is typed as BrandAttributeData[]
+for (const attr of list.data) {
+  console.log(attr.name); // typed as string
+  console.log(attr.variants_count); // typed as number
+}
+```
+
+### Schema types
+
+```typescript
+// Request schemas
+type CreateBrandAttributeSchema = {
+  name: string; // 1-100 chars
+  taxonomy_attribute_id?: string | null; // UUID
+};
+
+type UpdateBrandAttributeSchema = {
+  id: string; // UUID, required
+  name?: string; // 1-100 chars
+  taxonomy_attribute_id?: string | null; // UUID
+};
+
+type DeleteBrandAttributeSchema = {
+  id: string; // UUID
+};
+
+// Response types
+type BrandAttributeData = {
+  id: string;
+  brandId: string;
+  taxonomyAttributeId: string | null;
+  name: string;
+  createdAt: string; // ISO 8601
+  updatedAt: string; // ISO 8601
+};
+
+type BrandAttributeWithMetrics = BrandAttributeData & {
+  values_count: number;
+  variants_count: number;
+};
+```
+
+## Common patterns
+
+### Creating a complete variant dimension
+
+Create an attribute and its values in sequence:
+
+```typescript
+// 1. Create the attribute
+const attrResult = await trpc.catalog.attributes.create.mutate({
+  name: "Color"
+});
+
+const attributeId = attrResult.data.id;
+
+// 2. Create values for the attribute
+const values = ["Red", "Blue", "Green"];
+for (const name of values) {
+  await trpc.catalog.attributeValues.create.mutate({
+    attribute_id: attributeId,
+    name
+  });
+}
+```
+
+For bulk value creation, use the batch endpoint:
+
+```typescript
+await trpc.catalog.attributeValues.batchCreate.mutate({
+  values: [
+    { attribute_id: attributeId, name: "Red" },
+    { attribute_id: attributeId, name: "Blue" },
+    { attribute_id: attributeId, name: "Green" }
+  ]
+});
+```
+
+### Checking usage before deletion
+
+```typescript
+const attrs = await trpc.catalog.attributes.list.query();
+
+// Find unused attributes
+const unused = attrs.data.filter(attr => attr.variants_count === 0);
+
+// Safe to delete
+for (const attr of unused) {
+  await trpc.catalog.attributes.delete.mutate({ id: attr.id });
+}
+```

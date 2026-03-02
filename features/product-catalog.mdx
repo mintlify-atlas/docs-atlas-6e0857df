@@ -1,0 +1,307 @@
+---
+title: Product catalog
+description: Organize and manage your product inventory with a structured catalog system that supports variants, bulk operations, and integration syncing.
+---
+
+The product catalog is your central workspace for managing all products and their variants. It provides a structured way to organize inventory, manage product data, and prepare products for passport publication.
+
+## Catalog structure
+
+Your catalog is organized in a two-level hierarchy:
+
+### Products
+
+Products represent a general item in your collection:
+
+- Product name and description
+- Primary product image
+- Category classification
+- Manufacturer assignment
+- Season and collection grouping
+- Shared attributes across all variants
+
+Each product serves as a container for one or more variants.
+
+### Variants
+
+Variants represent specific SKUs or configurations of a product:
+
+- Unique SKU and barcode identifiers
+- Variant-specific attributes (size, color, style)
+- Optional variant-level name and description overrides
+- Variant-specific images
+- Independent passport publication
+
+<Note>
+  Products can have a single variant (simple products) or multiple variants (configurable products like a t-shirt available in multiple sizes and colors).
+</Note>
+
+## Creating products
+
+You have multiple options for adding products to your catalog:
+
+### Manual creation
+
+Create products one at a time through the interface:
+
+<Steps>
+  <Step title="Basic information">
+    Enter product name, description, and upload a product image. Assign a category from your taxonomy.
+  </Step>
+  
+  <Step title="Organization">
+    Link the product to a manufacturer, assign it to a season, and add any relevant tags.
+  </Step>
+  
+  <Step title="Materials and composition">
+    Define what materials make up the product with percentage breakdowns. Materials must exist in your brand catalog first.
+  </Step>
+  
+  <Step title="Environmental data">
+    Add environmental metrics like carbon emissions and water usage.
+  </Step>
+  
+  <Step title="Supply chain">
+    Map out the production journey by adding operators for each manufacturing step (cutting, sewing, dyeing, etc.).
+  </Step>
+  
+  <Step title="Variants">
+    Create one or more variants with specific SKUs, barcodes, and variant attributes.
+  </Step>
+</Steps>
+
+### Bulk import
+
+Import multiple products simultaneously using structured Excel files:
+
+- Download the import template with pre-defined columns
+- Fill in product and variant data in the spreadsheet
+- Upload the file for validation and processing
+- Review any errors or warnings before confirming
+- Products and variants are created automatically
+
+<Accordion title="Bulk import requirements">
+  The bulk import validates data against your brand catalog:
+  
+  - Materials must already exist in your materials catalog
+  - Operators must be defined in your operators catalog
+  - Manufacturers must exist in your manufacturers list
+  - Certifications must be set up before referencing in imports
+  - Product handles must be unique within your brand
+  
+  The system provides detailed error messages for any validation failures, showing exactly which rows and columns need correction.
+</Accordion>
+
+### Integration sync
+
+Connect to external platforms to automatically sync products:
+
+- Connect Shopify or other e-commerce platforms
+- Products are created automatically when synced
+- Field mappings control how external data populates product fields
+- Source tracking maintains the link between systems
+- Synced products are marked with their integration source
+
+<Info>
+  Integration-sourced products can still be edited manually in Avelero. You control whether those edits are preserved or overwritten on the next sync.
+</Info>
+
+## Product handles
+
+Every product has a unique handle:
+
+- URL-friendly identifier (lowercase, hyphens, no spaces)
+- Unique within your brand
+- Used in product URLs within the Avelero platform
+- Can be manually set or auto-generated from the product name
+
+<Note>
+  Product handles are different from UPIDs. Handles are internal identifiers for the product in your catalog, while UPIDs are public identifiers for published passports.
+</Note>
+
+## Organizing products
+
+### Categories
+
+Classify products using taxonomy categories:
+
+- Standardized taxonomy aligned with industry standards
+- Hierarchical category structure
+- Helps with filtering and organization
+- Required for certain compliance reporting
+
+### Seasons
+
+Group products by collection or season:
+
+- Create custom seasons in your brand catalog
+- Useful for organizing by launch date or collection
+- Filter catalog views by season
+- Helps track which products are current vs. archived
+
+### Tags
+
+Add flexible, freeform tags to products:
+
+- Create custom tags relevant to your workflow
+- Tag products with multiple labels
+- Filter and search by tags
+- Useful for internal categorization beyond formal taxonomy
+
+### Manufacturers
+
+Assign products to manufacturers:
+
+- Link each product to a manufacturer from your catalog
+- Manufacturer details appear on the passport
+- Filter products by manufacturer
+- Track production across different facilities
+
+## Variant management
+
+### Variant attributes
+
+Each variant can have up to three custom attributes:
+
+- Common examples: Size, Color, Style
+- Attribute names and values are flexible
+- Display on the passport to differentiate variants
+- Used for filtering and organization
+
+### Ghost variants
+
+The system automatically creates "ghost" variants when needed:
+
+- Created for products without explicit variants
+- Invisible in the user interface
+- Exist solely for passport publishing purposes
+- Ensure every product can have a publishable passport
+
+### Variant identifiers
+
+Variants support multiple identifier types:
+
+<CardGroup cols={2}>
+  <Card title="SKU" icon="tag">
+    Stock Keeping Unit. Your internal identifier for inventory management.
+  </Card>
+  
+  <Card title="Barcode" icon="barcode">
+    External barcode like EAN, UPC, or custom barcode. Must be unique within your brand.
+  </Card>
+</CardGroup>
+
+## Filtering and search
+
+Find products quickly using multiple filter options:
+
+- **Text search**: Search by product name or handle
+- **Status filter**: View published, unpublished, or scheduled products
+- **Category filter**: Filter by taxonomy category
+- **Season filter**: Show products from specific seasons
+- **Tag filter**: Filter by assigned tags
+- **Manufacturer filter**: View products from specific manufacturers
+
+Filters can be combined to narrow down results.
+
+## Bulk operations
+
+Perform actions on multiple products at once:
+
+### Bulk publish
+
+- Select multiple products
+- Publish all their passports simultaneously
+- Each variant gets a UPID and becomes publicly accessible
+
+### Bulk export
+
+- Export product data to Excel format
+- Choose which fields to include
+- Use for analysis, backup, or migration
+
+### Bulk QR code generation
+
+- Generate QR codes for multiple variants
+- Download as a batch in your preferred format
+- Useful for printing labels or tags for entire collections
+
+### Bulk delete
+
+- Remove multiple products from the catalog
+- Confirmation required to prevent accidental deletion
+- Associated variants and data are cascaded appropriately
+
+<Info>
+  Deleting a product variant that has a published passport will orphan the passport but preserve it for QR code resolution.
+</Info>
+
+## Product status
+
+Products can be in one of three publication states:
+
+### Unpublished
+
+The default state for new products:
+
+- Product exists in your catalog
+- Data is being prepared or is incomplete
+- No public passport exists yet
+- Not visible to end consumers
+
+### Published
+
+Products with active, live passports:
+
+- All variants have published passports with UPIDs
+- Publicly accessible via passport URLs
+- QR codes resolve to passport pages
+- Data is visible to consumers
+
+### Scheduled
+
+A visual indicator for planned publication:
+
+- Behaves the same as unpublished
+- Helps teams track products ready for future publication
+- No automatic publishing occurs (manual action required)
+
+## Source tracking
+
+The catalog tracks where each product originated:
+
+### Manual products
+
+- Created directly in Avelero interface
+- Created via bulk import upload
+- Full editing control
+- No external sync dependencies
+
+### Integration products
+
+- Created by connected integrations (Shopify, etc.)
+- Source integration is tracked in the database
+- May have sync policies that affect editability
+- Can be unlinked from the source if needed
+
+<Accordion title="Integration sync behavior">
+  When a product is synced from an integration:
+  
+  - The product is marked with the source integration ID
+  - Field configurations determine which fields sync
+  - You can still manually edit integration-sourced products
+  - Sync policies control whether manual edits are preserved or overwritten
+  - Unlinking from the source converts the product to manual mode
+</Accordion>
+
+## Data validation
+
+The catalog enforces data quality rules:
+
+- Product handles must be unique within your brand
+- Barcodes must be unique across all variants in your brand
+- Material percentages are validated
+- Referenced catalog items (materials, operators) must exist
+- Required fields must be completed before publishing
+
+Validation errors are surfaced immediately with clear guidance on how to fix them.

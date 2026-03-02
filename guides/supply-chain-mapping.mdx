@@ -1,0 +1,384 @@
+---
+title: Supply chain mapping
+description: Map your product's journey through the supply chain with multi-tier tracking and operator management
+---
+
+Supply chain mapping creates transparency by documenting every step in your product's journey from raw materials to finished goods. Avelero's journey system supports multi-tier supply chain tracking with flexible operator assignments.
+
+## Journey steps overview
+
+A product's journey consists of multiple steps, each representing a stage in the supply chain. Steps are ordered sequentially and can have one or more operators (facilities, suppliers, or partners) assigned.
+
+### Journey step structure
+
+Each journey step includes:
+
+- **Step type**: The production stage (e.g., "Spinning", "Weaving", "Dyeing", "Cutting", "Sewing")
+- **Sort index**: Position in the journey sequence (0, 1, 2, ...)
+- **Operators**: One or more facilities that perform this step
+
+<Info>
+Journey steps can be defined at the product level (shared by all variants) or at the variant level (unique to specific variants).
+</Info>
+
+## Production step types
+
+Avelero provides standard production step names based on common manufacturing processes:
+
+- **Raw Materials**: Sourcing of base materials
+- **Spinning**: Fiber to yarn conversion
+- **Knitting** / **Weaving**: Fabric creation
+- **Dyeing**: Color application
+- **Finishing**: Fabric treatment and processing
+- **Cutting**: Pattern cutting
+- **Sewing**: Garment assembly
+- **Packaging**: Final packaging
+- **Distribution**: Logistics and distribution
+
+You can also create custom step types by typing a name not in the standard list.
+
+<Note>
+Step types are freeform text values. Use consistent naming across your products to maintain data quality and enable supply chain analysis.
+</Note>
+
+## Operators catalog
+
+Operators represent facilities, suppliers, manufacturers, or partners in your supply chain. Each operator is created once in your brand catalog and can be reused across multiple journey steps and products.
+
+### Operator information
+
+Each operator includes:
+
+- **Display name**: Public-facing name shown in digital passports
+- **Legal name**: Official business name
+- **Contact details**: Email, phone, website
+- **Address**: Full address including country
+
+<Steps>
+  <Step title="Navigate to operators">
+    Go to **Settings** → **Operators** to manage your operator catalog
+  </Step>
+  
+  <Step title="Add an operator">
+    Click **Add operator** and fill in facility details
+  </Step>
+  
+  <Step title="Complete address information">
+    Enter the full address including country code for map visualization
+  </Step>
+  
+  <Step title="Use in journey steps">
+    Assign operators to journey steps when editing products
+  </Step>
+</Steps>
+
+### Operator data structure
+
+```typescript
+{
+  id: "uuid",
+  brandId: "uuid",
+  displayName: "Sustainable Textile Mill",
+  legalName: "Sustainable Textiles Pvt. Ltd.",
+  email: "contact@sustainabletextiles.in",
+  phone: "+91-22-1234-5678",
+  website: "https://sustainabletextiles.in",
+  addressLine1: "Plot 42, Industrial Area",
+  addressLine2: "Phase III",
+  city: "Mumbai",
+  state: "Maharashtra",
+  zip: "400001",
+  countryCode: "IN"
+}
+```
+
+<Info>
+All fields except `displayName` are optional, but complete data improves transparency and enables features like supply chain maps.
+</Info>
+
+## Building a product journey
+
+Journey steps are added in the product editor using an interactive table interface.
+
+### Adding journey steps
+
+<Steps>
+  <Step title="Open the Journey section">
+    In the product editor, scroll to the Journey section
+  </Step>
+  
+  <Step title="Add a step">
+    Click **Add step** to create a new journey row
+  </Step>
+  
+  <Step title="Select step type">
+    Click the Step column and select a production step type or create a custom one
+  </Step>
+  
+  <Step title="Assign operators">
+    Click the Operator column and select one or more facilities from your operator catalog
+  </Step>
+  
+  <Step title="Reorder steps">
+    Drag steps using the grip handle to arrange them in the correct sequence
+  </Step>
+</Steps>
+
+### Journey editor interface
+
+The journey editor provides drag-and-drop reordering:
+
+```
+┌──────────────┬─────────────────────────────────┐
+│ Step         │ Operator                        │
+├──────────────┼─────────────────────────────────┤
+│ ⋮⋮ Spinning  │ [Textile Mill A]                │
+│ ⋮⋮ Weaving   │ [Weaving Co.] [Partner Weaver]  │
+│ ⋮⋮ Dyeing    │ [Dye House B]                   │
+│ ⋮⋮ Sewing    │ [Garment Factory]               │
+└──────────────┴─────────────────────────────────┘
+```
+
+- **Grip handle (⋮⋮)**: Drag to reorder steps
+- **Step dropdown**: Select or create step types
+- **Operator tags**: Multiple operators can be assigned per step
+- **Three-dot menu**: Delete individual steps
+
+## Multi-operator assignments
+
+A single journey step can have multiple operators assigned. This is useful when:
+
+- Multiple facilities perform the same step in parallel
+- A step is split across partner facilities
+- Backup or secondary suppliers are documented
+
+<Accordion title="Example: Multi-facility weaving">
+```
+Step: Weaving
+Operators:
+  - Primary Weaving Facility (India)
+  - Partner Weaving Co. (Bangladesh)
+  - Backup Weaver (Vietnam)
+```
+
+All three operators appear in the digital passport for this step, showing supply chain redundancy and geographic distribution.
+</Accordion>
+
+<Note>
+The database enforces uniqueness per step: the same operator can only be assigned once per step, but can appear in multiple different steps.
+</Note>
+
+## Creating operators inline
+
+You can create new operators without leaving the product editor:
+
+<Steps>
+  <Step title="Start typing in the operator field">
+    Click the Operator column and type a name not in your catalog
+  </Step>
+  
+  <Step title="Click 'Create'">
+    Select the **Create "Operator Name"** option that appears
+  </Step>
+  
+  <Step title="Fill operator details">
+    A sheet opens where you can enter contact and address information
+  </Step>
+  
+  <Step title="Save">
+    The operator is added to your catalog and automatically assigned to the journey step
+  </Step>
+</Steps>
+
+This workflow helps you build your operator catalog organically as you add products.
+
+## Variant-level journey overrides
+
+Some products have variants with different production journeys. Variants can override the product-level journey:
+
+```
+Product: "Seasonal Jacket"
+├─ Product journey:
+│  1. Weaving → [Mill A]
+│  2. Dyeing → [Dye House B]
+│  3. Sewing → [Factory C]
+│
+├─ Variant: "Standard - Blue"
+│  └─ Inherits product journey
+│
+└─ Variant: "Premium - Black"
+   └─ Override journey:
+      1. Weaving → [Premium Mill X]
+      2. Dyeing → [Eco Dye House Y]
+      3. Finishing → [Specialty Finisher]
+      4. Sewing → [Premium Factory Z]
+```
+
+<Info>
+**Important:** Variant journey steps completely replace product journey steps—they don't merge. Adding any journey step to a variant overrides the entire product journey for that variant.
+</Info>
+
+## Journey data validation
+
+<Accordion title="Unique operator per step">
+The same operator cannot be assigned twice to the same journey step:
+
+```typescript
+// ✅ Valid
+Step 1: Weaving → [Mill A, Mill B]
+Step 2: Dyeing → [Mill A, Dye House C]
+
+// ❌ Invalid
+Step 1: Weaving → [Mill A, Mill A]  // Duplicate
+```
+
+This is enforced at the database level with a unique constraint on `(productId, sortIndex, operatorId)`.
+</Accordion>
+
+<Accordion title="Operator deletion restrictions">
+Operators assigned to journey steps cannot be deleted from the catalog:
+
+- Database enforces `RESTRICT` on delete
+- Remove the operator from all journey steps first
+- Prevents orphaned journey step references
+</Accordion>
+
+<Accordion title="Automatic reordering">
+When you reorder journey steps, the `sortIndex` is automatically updated:
+
+- Sort index starts at 0
+- Steps are numbered sequentially (0, 1, 2, 3, ...)
+- Deleting a step renumbers remaining steps
+- Drag-and-drop updates sort order immediately
+</Accordion>
+
+## Journey step data model
+
+### Product journey steps
+
+```typescript
+{
+  id: "uuid",
+  productId: "uuid",
+  sortIndex: 0,
+  stepType: "Spinning",
+  operatorId: "uuid",
+  createdAt: "timestamp",
+  updatedAt: "timestamp"
+}
+```
+
+<Note>
+Multiple rows with the same `sortIndex` represent multiple operators for that step. Each operator gets its own row.
+</Note>
+
+### Variant journey steps
+
+```typescript
+{
+  id: "uuid",
+  variantId: "uuid",
+  sortIndex: 0,
+  stepType: "Weaving",
+  operatorId: "uuid",
+  sourceIntegration: "shopify | null",
+  sourceExternalId: "external-id | null",
+  createdAt: "timestamp"
+}
+```
+
+Variant journey steps include source tracking to maintain data lineage when syncing with external systems.
+
+## Multi-tier supply chains
+
+Avelero supports complex multi-tier supply chains by allowing unlimited journey steps:
+
+<Accordion title="Example: Full textile supply chain">
+```
+Tier 4: Raw Material Extraction
+  → Step 1: Cotton Farming → [Organic Farm Co-op]
+
+Tier 3: Material Processing  
+  → Step 2: Ginning → [Cotton Gin Facility]
+  → Step 3: Spinning → [Yarn Mill A, Yarn Mill B]
+
+Tier 2: Fabric Production
+  → Step 4: Weaving → [Textile Mill]
+  → Step 5: Dyeing → [Dye House]
+  → Step 6: Finishing → [Finishing Plant]
+
+Tier 1: Product Assembly
+  → Step 7: Cutting → [Cutting Room]
+  → Step 8: Sewing → [Garment Factory]
+  → Step 9: Quality Control → [QC Facility]
+
+Tier 0: Distribution
+  → Step 10: Packaging → [Packaging Center]
+  → Step 11: Distribution → [Logistics Partner]
+```
+
+Each tier's operators are fully documented with contact and location data.
+</Accordion>
+
+## Best practices
+
+<Steps>
+  <Step title="Map the complete journey">
+    Document every meaningful step from raw materials to finished product. Partial journeys reduce transparency.
+  </Step>
+  
+  <Step title="Use consistent step names">
+    Standardize step type names across products to enable supply chain analysis and reporting.
+  </Step>
+  
+  <Step title="Complete operator data">
+    Fill in operator addresses and contact information. This enables map visualizations and builds trust.
+  </Step>
+  
+  <Step title="Order steps chronologically">
+    Arrange steps in the actual production sequence. This creates a logical narrative for consumers.
+  </Step>
+  
+  <Step title="Use multi-operator assignments wisely">
+    Assign multiple operators when they actually collaborate on the same step, not for unrelated facilities.
+  </Step>
+  
+  <Step title="Review and update regularly">
+    Supply chains change. Audit journey data quarterly and update when facilities or processes change.
+  </Step>
+</Steps>
+
+## Common workflows
+
+<Accordion title="Copying a journey to another product">
+Currently, journeys must be manually recreated for each product. To speed this up:
+
+1. Document your standard journey in a spreadsheet
+2. Create all operators in your catalog first
+3. Build the journey once, then reference it when creating similar products
+4. Future: Bulk import and journey templates are planned features
+</Accordion>
+
+<Accordion title="Updating an operator's address">
+1. Go to **Settings** → **Operators**
+2. Edit the operator's information
+3. Save changes
+
+All products using this operator automatically reflect the updated data in their digital passports.
+</Accordion>
+
+<Accordion title="Handling seasonal production changes">
+If your supply chain changes by season:
+
+**Option 1:** Update the journey steps
+- Replace operators as the supply chain changes
+- Keep historical data by creating new products for new seasons
+
+**Option 2:** Use variant-level journeys
+- Create variants for different production runs
+- Override journey at the variant level to show production-specific routes
+
+**Option 3:** Document with seasons
+- Create separate products per season
+- Use the Season field to group related products
+</Accordion>

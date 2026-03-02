@@ -1,0 +1,324 @@
+---
+title: Environmental impact
+description: Track and display environmental metrics like carbon emissions and water usage to demonstrate your sustainability commitments.
+---
+
+Environmental impact tracking lets you measure and communicate the sustainability footprint of your products through standardized metrics that appear on digital product passports.
+
+## Why track environmental impact?
+
+Environmental data is becoming essential:
+
+- **Regulatory requirements**: EU regulations increasingly mandate environmental disclosure
+- **Consumer demand**: Customers want to understand the environmental cost of their purchases
+- **Sustainability goals**: Track progress toward your environmental commitments
+- **Competitive advantage**: Differentiate your brand through measurable sustainability
+
+## Supported metrics
+
+Avelero tracks environmental impact through standardized metrics:
+
+### Carbon emissions
+
+Measure the carbon footprint of your products:
+
+- **Unit**: Kilograms of CO2 equivalent (kg CO2e)
+- **Scope**: Can include raw materials, manufacturing, transportation, or full lifecycle
+- **Display**: Shows on passport with clear units
+- **Comparison**: Enables benchmarking across products
+
+### Water usage
+
+Track water consumption during production:
+
+- **Unit**: Liters of water
+- **Scope**: Manufacturing process water usage
+- **Display**: Appears in environmental impact section of passport
+- **Context**: Helps consumers understand water intensity
+
+### Extensible structure
+
+The environmental data model supports additional metrics:
+
+- Custom environmental metrics can be stored
+- Each metric includes value and unit
+- Future metrics can be added as regulations evolve
+- Data structure is EU ESPR-aligned
+
+<Note>
+  Environmental metrics are stored at the product level and can be overridden at the variant level if needed for products with different environmental profiles across variants.
+</Note>
+
+## Adding environmental data
+
+You can input environmental metrics through several methods:
+
+### Manual entry
+
+Add environmental data when creating or editing products:
+
+<Steps>
+  <Step title="Open product editor">
+    Navigate to the product and access the environmental impact section.
+  </Step>
+  
+  <Step title="Enter carbon emissions">
+    Input the carbon footprint value in kg CO2e. Include methodology notes if desired.
+  </Step>
+  
+  <Step title="Enter water usage">
+    Add water consumption in liters. Specify whether this is manufacturing-only or lifecycle.
+  </Step>
+  
+  <Step title="Save and publish">
+    Data is saved to the product and included when the passport is published.
+  </Step>
+</Steps>
+
+### Bulk import
+
+Include environmental metrics in your bulk import files:
+
+- Add columns for carbon emissions and water usage
+- Specify units in column headers or use default units
+- Import validates that values are numeric
+- Metrics are applied to all products in the batch
+
+### Integration sync
+
+If your PLM or sustainability platform tracks environmental data:
+
+- Configure field mappings to sync environmental metrics
+- Map external metric names to Avelero's standard fields
+- Units are normalized during import
+- Data syncs automatically with product updates
+
+## Data sources and methodology
+
+Environmental data accuracy depends on your measurement approach:
+
+### Lifecycle assessment (LCA)
+
+Most accurate but resource-intensive:
+
+- Comprehensive analysis of all lifecycle stages
+- Includes raw materials, manufacturing, transport, use, and end-of-life
+- Conducted by specialized LCA consultants
+- Results can be directly entered into Avelero
+
+### Calculator tools
+
+Balance accuracy with practicality:
+
+- Use industry-specific calculators or databases
+- Input product specifications to estimate impact
+- Examples: Higg Index, Worldly, or custom tools
+- Transfer calculated values to product records
+
+### Supplier data
+
+Leverage data from your supply chain:
+
+- Request environmental data from manufacturers
+- Aggregate metrics from material suppliers
+- Combine facility-level data for total product impact
+- Document assumptions and boundaries
+
+### Industry averages
+
+Starting point when specific data isn't available:
+
+- Use category averages or benchmarks
+- Clearly note that values are estimates
+- Plan to replace with measured data over time
+
+<Info>
+  Start with the data you have and improve accuracy over time. Estimated data is better than no data, as long as it's clearly labeled.
+</Info>
+
+## Displaying environmental data
+
+Environmental metrics appear on published passports:
+
+### Impact section
+
+The passport includes a dedicated environmental impact section:
+
+- Large, clear display of key metrics
+- Visual indicators to make numbers meaningful
+- Units are always shown to prevent confusion
+- Contextualized with comparisons when possible
+
+### Section visibility
+
+Control whether environmental data is displayed:
+
+- Section is automatically shown if any metrics exist
+- Can be hidden in theme configuration if desired
+- Useful during data collection phase
+- Enable when you're ready to communicate impact
+
+### Visual presentation
+
+The impact section uses visual design to communicate:
+
+- Icons representing different metric types
+- Color coding if thresholds are met
+- Comparative context (e.g., "equivalent to X" statements)
+- Clear, consumer-friendly language
+
+## Product-level vs variant-level data
+
+Environmental metrics can be set at different levels:
+
+### Product-level environmental data
+
+Store metrics on the product:
+
+- Applies to all variants by default
+- Useful when all variants have similar environmental profiles
+- Simpler data management
+- Single source of truth
+
+### Variant-level environmental data
+
+Override at the variant level when needed:
+
+- Different sizes may have different material quantities
+- Different colors may use different dyeing processes
+- Variant-specific metrics override product-level defaults
+- Enables precise disclosure per SKU
+
+<Accordion title="When to use variant-level data">
+  Use variant-level environmental metrics when:
+  
+  - Variants have significantly different material quantities (e.g., XS vs XXL)
+  - Different color options use different chemicals or processes
+  - Specific variants are made at different facilities with different energy sources
+  - You need precise per-SKU carbon accounting
+  
+  Otherwise, product-level metrics are simpler to manage.
+</Accordion>
+
+## Data validation
+
+The system validates environmental data for quality:
+
+- Values must be numeric
+- Negative values are rejected
+- Units are required for clarity
+- Extreme outliers may trigger warnings
+
+## Environmental certifications
+
+While environmental metrics show measured impact, certifications validate practices:
+
+### Linking certifications to materials
+
+Certifications are primarily associated with materials:
+
+- Add certifications to your materials catalog
+- Materials inherit certification details
+- Certifications appear in the materials section of passports
+
+### Certification types
+
+Common environmental certifications:
+
+- GOTS (Global Organic Textile Standard)
+- OEKO-TEX Standard 100
+- Bluesign
+- Cradle to Cradle
+- FSC (Forest Stewardship Council)
+- Recycled content certifications
+
+### Certification display
+
+Certification details appear on passports:
+
+- Certification name and type
+- Certification code or ID
+- Testing institute information
+- Issue and expiry dates
+
+<Info>
+  Certifications validate your environmental claims and build consumer trust. Combine metrics (what) with certifications (verified by whom) for comprehensive transparency.
+</Info>
+
+## Compliance and standards
+
+### EU ESPR alignment
+
+Environmental metrics follow EU requirements:
+
+- Structured data in JSON-LD format
+- Standardized units of measurement
+- Clear attribution and methodology
+- Version history for audit trails
+
+### Carbon footprint standards
+
+Align with recognized standards:
+
+- PAS 2050 for product carbon footprints
+- GHG Protocol Product Standard
+- ISO 14067 for carbon footprint of products
+
+### Water footprint standards
+
+Follow water accounting best practices:
+
+- ISO 14046 for water footprint assessment
+- Water Footprint Network standards
+- Distinguish between blue, green, and grey water where applicable
+
+## Reporting and analysis
+
+Use environmental data for insights:
+
+### Portfolio analysis
+
+Understand your product range:
+
+- Export environmental data across all products
+- Identify high-impact products for improvement
+- Track average impact by category or season
+- Set reduction targets based on baselines
+
+### Progress tracking
+
+Measure improvement over time:
+
+- Compare environmental metrics year-over-year
+- Monitor impact of process changes
+- Validate that sustainability initiatives reduce impact
+- Report progress toward goals
+
+### Sustainability reporting
+
+Feed corporate sustainability reports:
+
+- Aggregate product-level data for company-level reporting
+- Support GRI, SASB, or TCFD disclosures
+- Provide evidence for sustainability claims
+- Demonstrate transparency to stakeholders
+
+## Best practices
+
+<CardGroup cols={2}>
+  <Card title="Start simple" icon="seedling">
+    Begin with one or two key metrics. Add more data as your measurement capabilities grow.
+  </Card>
+  
+  <Card title="Document methodology" icon="file-lines">
+    Keep internal records of how metrics were calculated, even if not displayed publicly.
+  </Card>
+  
+  <Card title="Update regularly" icon="arrows-rotate">
+    Review and update environmental data as processes improve or new data becomes available.
+  </Card>
+  
+  <Card title="Be transparent" icon="eye">
+    Clearly indicate whether metrics are measured, calculated, or estimated. Honesty builds trust.
+  </Card>
+</CardGroup>

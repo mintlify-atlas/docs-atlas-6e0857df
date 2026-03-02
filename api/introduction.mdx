@@ -1,0 +1,253 @@
+---
+title: API introduction
+description: Overview of the Avelero API architecture, endpoints, and design principles
+---
+
+The Avelero API provides programmatic access to Digital Product Passport (DPP) management, brand configuration, product catalog operations, and integrations. The API uses a hybrid architecture combining tRPC for private endpoints and REST for public access.
+
+## Architecture overview
+
+Avelero's API is built with two distinct layers:
+
+<Steps>
+  <Step title="Private API (tRPC)">
+    Type-safe procedures for authenticated brand management, catalog operations, and product administration. All private endpoints require authentication and brand context.
+  </Step>
+  <Step title="Public API (REST)">
+    Open endpoints for accessing published Digital Product Passports, custom domain resolution, and barcode lookups. No authentication required.
+  </Step>
+</Steps>
+
+### Technology stack
+
+The API server is built with:
+
+- **Hono** - Fast web framework for HTTP routing
+- **tRPC** - End-to-end type-safe RPC framework
+- **Supabase** - Authentication and storage backend
+- **Drizzle ORM** - Type-safe database queries
+- **SuperJSON** - Enhanced JSON serialization with Date, Map, Set support
+- **WebSockets** - Real-time progress updates for bulk operations
+
+## Base URLs
+
+<Tabs>
+  <Tab title="Development">
+    ```bash
+    http://localhost:4100
+    ```
+  </Tab>
+  <Tab title="Production">
+    ```bash
+    https://api.avelero.com
+    ```
+  </Tab>
+</Tabs>
+
+<Note>
+  The API runs on port **4100** in development, not the standard port 3000.
+</Note>
+
+## API design principles
+
+### Type safety
+
+The tRPC layer provides end-to-end type safety from server to client. All inputs are validated with Zod schemas, and outputs are automatically typed.
+
+```typescript apps/app/src/trpc/client.tsx
+import type { AppRouter } from "@v1/api/src/trpc/routers/_app";
+import { createTRPCClient, httpBatchLink } from "@trpc/client";
+import superjson from "superjson";
+
+const client = createTRPCClient<AppRouter>({
+  links: [
+    httpBatchLink({
+      url: `${apiUrl}/trpc`,
+      transformer: superjson,
+    }),
+  ],
+});
+```
+
+### Request batching
+
+The tRPC client automatically batches multiple concurrent requests into a single HTTP call, reducing network overhead.
+
+```typescript apps/app/src/trpc/client.tsx
+httpBatchLink({
+  url: `${apiUrl}/trpc`,
+  transformer: superjson,
+  maxURLLength: 2083, // Prevents GET requests from exceeding limits
+})
+```
+
+### Context-aware procedures
+
+Every tRPC procedure receives a fully hydrated context containing:
+
+- **Authenticated Supabase client** - Bound to the request's JWT token
+- **Elevated admin client** - For privileged operations (storage, user management)
+- **User object** - Authenticated user details or null
+- **Brand context** - Active brand ID and role (owner/member)
+- **Database connection** - Drizzle instance for transactional queries
+- **Data loaders** - Request-scoped batching and caching
+- **Geo context** - IP address and location hints
+
+See `apps/api/src/trpc/init.ts:37` for the complete context definition.
+
+### Middleware layers
+
+The API enforces security through composable middleware:
+
+<CodeGroup>
+  ```typescript Public procedures
+  // No authentication required
+  export const publicProcedure = t.procedure;
+  ```
+
+  ```typescript Protected procedures
+  // Requires valid JWT token and brand membership
+  export const protectedProcedure = t.procedure
+    .use(withBrandContext)
+    .use(async (opts) => {
+      if (!opts.ctx.user) throw unauthorized();
+      return opts.next({ ctx: authedCtx });
+    });
+  ```
+
+  ```typescript Brand-required procedures
+  // Requires active brand selection for mutations
+  export const brandRequiredProcedure = protectedProcedure
+    .use(requireBrand);
+  ```
+</CodeGroup>
+
+## API router structure
+
+The API is organized into domain-specific routers, each handling a distinct area of functionality:
+
+| Router | Description | Authentication |
+|--------|-------------|----------------|
+| `user` | User profile, invites, brand management (list/create/leave) | Protected |
+| `brand` | Brand lifecycle, members, invites, theme, collections | Protected |
+| `catalog` | Brand catalog entities (attributes, materials, manufacturers) | Protected |
+| `taxonomy` | Global read-only taxonomy data | Protected |
+| `products` | Products, variants, attributes | Protected |
+| `bulk` | Bulk import/export operations | Protected |
+| `composite` | Performance-optimized composite endpoints | Protected |
+| `summary` | Aggregated statistics | Protected |
+| `integrations` | Integration connections (Shopify), sync, mappings | Protected |
+| `notifications` | User-specific in-app notifications | Protected |
+| `internal` | Server-to-server endpoints (WebSocket progress updates) | API key |
+| `dppPublic` | Public DPP access by UPID or barcode | Public |
+
+See `apps/api/src/trpc/routers/_app.ts:44` for the complete router definition.
+
+## Public REST endpoints
+
+The following endpoints are accessible without authentication:
+
+### Health check
+
+```bash
+GET /health
+```
+
+Returns API status for health monitoring.
+
+**Response:**
+```json
+{
+  "status": "ok"
+}
+```
+
+### Integration health
+
+```bash
+GET /integrations/health
+```
+
+Returns integration service status.
+
+**Response:**
+```json
+{
+  "status": "ok",
+  "service": "integrations"
+}
+```
+
+### OAuth routes
+
+Integration OAuth flows use raw HTTP endpoints (not tRPC) because OAuth providers redirect directly to them:
+
+- `GET /integrations/shopify/install` - Initiate Shopify OAuth
+- `GET /integrations/shopify/callback` - Handle Shopify OAuth callback
+
+See `apps/api/src/index.ts:86` for OAuth route implementation.
+
+## WebSocket endpoints
+
+The API provides real-time progress updates for long-running operations via WebSockets.
+
+### Import progress
+
+```bash
+ws://localhost:4100/ws/import-progress?jobId={jobId}
+```
+
+Subscribe to bulk import progress updates. The server emits progress events with status, percentage, and error details.
+
+See `apps/api/src/lib/websocket-manager.ts` for WebSocket implementation.
+
+## CORS configuration
+
+The API enforces strict CORS policies with configurable origins:
+
+```typescript apps/api/src/index.ts:24
+cors({
+  origin: (origin, c) => {
+    const allowedOrigins = process.env.ALLOWED_API_ORIGINS?.split(",");
+    // Supports exact matches and wildcard patterns
+    return isAllowed ? origin : undefined;
+  },
+  allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+  allowHeaders: [
+    "Authorization",
+    "Content-Type",
+    "accept-language",
+    "x-trpc-source",
+    "x-user-locale",
+    "x-user-timezone",
+    "x-user-country",
+  ],
+})
+```
+
+Configure allowed origins in the `ALLOWED_API_ORIGINS` environment variable (comma-separated list with optional wildcards).
+
+## Error handling
+
+The API uses tRPC's error system with standardized error codes:
+
+- `UNAUTHORIZED` - Missing or invalid authentication
+- `FORBIDDEN` - Insufficient permissions for the requested operation
+- `BAD_REQUEST` - Invalid input parameters or missing brand context
+- `NOT_FOUND` - Requested resource does not exist
+- `INTERNAL_SERVER_ERROR` - Unexpected server errors
+
+<Warning>
+  All errors include a `message` field with human-readable descriptions. Never expose sensitive information in error messages.
+</Warning>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Authentication" icon="key" href="/api/authentication">
+    Learn how to authenticate API requests with JWT tokens
+  </Card>
+  <Card title="Products API" icon="box" href="/api/products/overview">
+    Explore the products API endpoints
+  </Card>
+</CardGroup>

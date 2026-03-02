@@ -1,0 +1,772 @@
+---
+title: Theming and branding
+description: Customize the visual design and content of your digital product passports with the theme editor, CSS overrides, section visibility, menus, and CTA banners
+---
+
+Avelero's theming system lets you create digital product passports that match your brand identity. Customize colors, typography, logos, navigation, and content sections to deliver a consistent brand experience.
+
+## Theme architecture
+
+The theme system separates **styles** from **configuration**:
+
+### Theme styles
+
+Visual design elements that control how passports look:
+
+- Design tokens (colors, typography scales)
+- Component style overrides
+- Custom fonts (Google Fonts or self-hosted)
+- Custom CSS stylesheets
+
+### Theme configuration
+
+Content and behavior settings:
+
+- Branding assets (logos, images)
+- Navigation menus (primary and secondary)
+- CTA banner content and visibility
+- Social media links
+- Section visibility toggles
+- Carousel configuration
+
+<Info>
+This separation allows you to change visual design without affecting content, and vice versa. Theme changes apply to all passports immediately without republishing.
+</Info>
+
+## Design tokens
+
+Design tokens are the foundation of your theme's visual system.
+
+### Color tokens
+
+Define your brand's color palette:
+
+<CodeGroup>
+```json Color structure
+{
+  "colors": {
+    "background": "#FFFFFF",
+    "foreground": "#000000",
+    "muted": "#F5F5F5",
+    "mutedForeground": "#737373",
+    "accent": "#0066CC",
+    "accentForeground": "#FFFFFF",
+    "card": "#FFFFFF",
+    "cardForeground": "#000000",
+    "primary": "#1A1A1A",
+    "primaryForeground": "#FFFFFF",
+    "destructive": "#DC2626",
+    "destructiveForeground": "#FFFFFF",
+    "success": "#16A34A",
+    "successForeground": "#FFFFFF",
+    "border": "#E5E5E5",
+    "link": "#0066CC"
+  }
+}
+```
+
+```json Example: Dark theme
+{
+  "colors": {
+    "background": "#0A0A0A",
+    "foreground": "#FAFAFA",
+    "muted": "#262626",
+    "mutedForeground": "#A3A3A3",
+    "accent": "#3B82F6",
+    "accentForeground": "#FFFFFF",
+    "primary": "#FAFAFA",
+    "primaryForeground": "#0A0A0A",
+    "border": "#404040"
+  }
+}
+```
+</CodeGroup>
+
+**Token usage:**
+- Colors cascade to all components automatically
+- Change `primary` once, updates all buttons, headers, and accents
+- Ensures visual consistency across passport pages
+
+### Typography tokens
+
+Define text styles for different content types:
+
+<CodeGroup>
+```json Typography structure
+{
+  "typography": {
+    "h1": {
+      "fontSize": "2.25rem",
+      "fontWeight": 700,
+      "lineHeight": 1.2,
+      "letterSpacing": "-0.02em"
+    },
+    "h2": {
+      "fontSize": "1.875rem",
+      "fontWeight": 600,
+      "lineHeight": 1.3
+    },
+    "body": {
+      "fontSize": "1rem",
+      "fontWeight": 400,
+      "lineHeight": 1.5
+    },
+    "body-sm": {
+      "fontSize": "0.875rem",
+      "lineHeight": 1.4
+    }
+  }
+}
+```
+</CodeGroup>
+
+**Available scales:**
+- `h1`, `h2`, `h3`, `h4`, `h5`, `h6` - Heading levels
+- `body` - Default body text
+- `body-sm` - Smaller text (captions, labels)
+- `body-xs` - Extra small text (metadata, fine print)
+
+## Component style overrides
+
+Customize individual components beyond design tokens.
+
+### Override structure
+
+Each component class can override specific CSS properties:
+
+```json Component override example
+{
+  "product__title": {
+    "fontSize": "2rem",
+    "fontWeight": 600,
+    "color": "$primary",
+    "marginBottom": 16
+  }
+}
+```
+
+### Color values in overrides
+
+Component colors can reference tokens or use explicit values:
+
+**Token reference** (recommended):
+```json
+{
+  "banner__button": {
+    "backgroundColor": "$primary",
+    "color": "$primaryForeground"
+  }
+}
+```
+Outputs: `background-color: var(--primary)`
+
+**Explicit hex value:**
+```json
+{
+  "banner__button": {
+    "backgroundColor": "#FF6B00",
+    "color": "#FFFFFF"
+  }
+}
+```
+Outputs: `background-color: #FF6B00`
+
+<Note>
+Use token references (`$primary`) when you want changes to design tokens to cascade. Use explicit hex values (`#FF6B00`) for one-off overrides that shouldn't change.
+</Note>
+
+### Component class reference
+
+<AccordionGroup>
+  <Accordion title="Header components">
+    - `header` - Main header container
+    - `header__text-logo` - Text logo styling when no image logo is used
+  </Accordion>
+  
+  <Accordion title="Product components">
+    - `product__image` - Main product image
+    - `product__title` - Product name heading
+    - `product__description` - Product description text
+    - `product__brand` - Brand name display
+    - `product__show-more` - Expand/collapse button for long descriptions
+  </Accordion>
+  
+  <Accordion title="Product details components">
+    - `product-details` - Details section container (border color inherited by rows)
+    - `product-details__label` - Detail row labels
+    - `product-details__value` - Detail row values
+  </Accordion>
+  
+  <Accordion title="Menu components">
+    - `menu-primary-button` - Primary menu button
+    - `menu-primary-button__icon` - Icon inside primary menu button
+    - `menu-secondary-button` - Secondary menu button
+    - `menu-secondary-button__icon` - Icon inside secondary menu button
+  </Accordion>
+  
+  <Accordion title="Impact components">
+    - `impact-card` - Environmental impact card container
+    - `impact-card__title` - Impact metric name
+    - `impact-card__type` - Impact type label
+    - `impact-card__value` - Numeric value
+    - `impact-card__unit` - Unit of measurement
+    - `impact-card__icon` - Impact category icon
+  </Accordion>
+  
+  <Accordion title="Materials components">
+    - `materials-card` - Material card container
+    - `materials-card__title` - Material name
+    - `materials-card__percentage` - Material percentage
+    - `materials-card__type` - Material type/category
+    - `materials-card__certification` - Certification badge
+    - `materials-card__certification-icon` - Checkmark icon for certified materials
+    - `materials-card__certification-text` - Certification name text
+    - `materials-card__origin` - Material origin/source
+  </Accordion>
+  
+  <Accordion title="Journey components">
+    - `journey-card` - Supply chain step card
+    - `journey-card__title` - Step name
+    - `journey-card__line` - Visual connector line between steps
+    - `journey-card__type` - Process type
+    - `journey-card__operator` - Operator/facility name
+  </Accordion>
+  
+  <Accordion title="Carousel components">
+    - `carousel__title` - "Similar products" heading
+    - `carousel__nav-button` - Previous/Next navigation buttons
+    - `carousel__nav-button-icon` - Arrow icons in nav buttons
+    - `carousel__product-image` - Product thumbnail images
+    - `carousel__product-details` - Product info container
+    - `carousel__product-name` - Product name in carousel
+    - `carousel__product-price` - Product price in carousel
+  </Accordion>
+  
+  <Accordion title="Banner components">
+    - `banner` - CTA banner outer container
+    - `banner__container` - Banner content wrapper
+    - `banner__headline` - Main banner headline
+    - `banner__subline` - Banner subheading
+    - `banner__button` - CTA button
+  </Accordion>
+  
+  <Accordion title="Footer components">
+    - `footer` - Footer container
+    - `footer__legal-name` - Brand legal name
+    - `footer__social-icons` - Social media icon container
+  </Accordion>
+</AccordionGroup>
+
+### Typescale selection
+
+Apply a typography scale to a component:
+
+```json Using typescale
+{
+  "carousel__title": {
+    "typescale": "h2"
+  }
+}
+```
+
+This applies all properties from the `h2` typography token (fontSize, fontWeight, lineHeight, letterSpacing).
+
+## Custom fonts
+
+### Google Fonts
+
+Use any font from Google Fonts:
+
+<Steps>
+  <Step title="Browse Google Fonts">
+    Visit [fonts.google.com](https://fonts.google.com) and select fonts.
+  </Step>
+  
+  <Step title="Copy embed URL">
+    Click "View selected families" and copy the `<link>` href:
+    
+    ```html
+    https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap
+    ```
+  </Step>
+  
+  <Step title="Add to theme">
+    In theme settings, paste the Google Fonts URL into the **Google Fonts URL** field.
+  </Step>
+  
+  <Step title="Apply in typography tokens">
+    Set `fontFamily` in typography tokens:
+    
+    ```json
+    {
+      "typography": {
+        "body": {
+          "fontFamily": "'Inter', sans-serif"
+        }
+      }
+    }
+    ```
+  </Step>
+</Steps>
+
+### Self-hosted custom fonts
+
+Use your brand's proprietary fonts:
+
+<Steps>
+  <Step title="Upload font files">
+    Upload `.woff2` font files to your file assets in Avelero.
+  </Step>
+  
+  <Step title="Get CDN URLs">
+    Copy the public CDN URL for each font file.
+  </Step>
+  
+  <Step title="Define custom fonts">
+    Add to theme styles:
+    
+    ```json
+    {
+      "customFonts": [
+        {
+          "fontFamily": "Brand Sans",
+          "src": "https://cdn.avelero.com/fonts/brand-sans-regular.woff2",
+          "fontWeight": 400,
+          "fontStyle": "normal",
+          "fontDisplay": "swap"
+        },
+        {
+          "fontFamily": "Brand Sans",
+          "src": "https://cdn.avelero.com/fonts/brand-sans-bold.woff2",
+          "fontWeight": 700,
+          "fontStyle": "normal",
+          "fontDisplay": "swap"
+        }
+      ]
+    }
+    ```
+  </Step>
+  
+  <Step title="Apply in tokens">
+    Reference the font family in typography:
+    
+    ```json
+    {
+      "typography": {
+        "body": {
+          "fontFamily": "'Brand Sans', sans-serif"
+        }
+      }
+    }
+    ```
+  </Step>
+</Steps>
+
+<Accordion title="Font file requirements">
+  - **Format**: `.woff2` (best compression and browser support)
+  - **Fallback**: Include system font fallback (e.g., `sans-serif`)
+  - **Licensing**: Ensure font license allows web embedding
+  - **Optimization**: Subset fonts to reduce file size
+</Accordion>
+
+## Custom CSS stylesheets
+
+For advanced styling beyond component overrides:
+
+<Steps>
+  <Step title="Create stylesheet">
+    Write custom CSS targeting passport components or adding new styles.
+  </Step>
+  
+  <Step title="Upload stylesheet">
+    Upload `.css` file to Avelero file assets.
+  </Step>
+  
+  <Step title="Link in theme">
+    Copy the CDN URL and set as **Custom stylesheet URL** in theme settings.
+  </Step>
+</Steps>
+
+**Custom CSS example:**
+
+```css Custom styles
+/* Add subtle animation to buttons */
+.banner__button {
+  transition: transform 0.2s ease;
+}
+
+.banner__button:hover {
+  transform: scale(1.05);
+}
+
+/* Add custom section divider */
+.section-divider {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--border),
+    transparent
+  );
+  margin: 48px 0;
+}
+
+/* Customize product image aspect ratio */
+.product__image {
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+}
+```
+
+<Warning>
+Custom CSS is loaded after default styles. Use higher specificity or `!important` if needed to override defaults. Test thoroughly across different screen sizes.
+</Warning>
+
+## Theme configuration
+
+### Branding assets
+
+Set your brand logo:
+
+```json Branding config
+{
+  "branding": {
+    "headerLogoUrl": "https://cdn.avelero.com/brands/logo.svg"
+  }
+}
+```
+
+**Logo requirements:**
+- Format: SVG, PNG, or JPG
+- Recommended: SVG for scalability
+- Max width: Auto-sized to fit header
+- Transparent background recommended for PNG
+
+### Navigation menus
+
+Configure primary and secondary menus:
+
+```json Menu config
+{
+  "menus": {
+    "primary": [
+      { "label": "Shop", "url": "https://yourbrand.com/shop" },
+      { "label": "Sustainability", "url": "https://yourbrand.com/sustainability" },
+      { "label": "About", "url": "https://yourbrand.com/about" }
+    ],
+    "secondary": [
+      { "label": "Privacy Policy", "url": "https://yourbrand.com/privacy" },
+      { "label": "Terms", "url": "https://yourbrand.com/terms" },
+      { "label": "Contact", "url": "https://yourbrand.com/contact" }
+    ]
+  }
+}
+```
+
+**Menu behavior:**
+- Primary menu: Displayed in header or expandable menu
+- Secondary menu: Displayed in footer
+- All links open in current window (add `target="_blank"` in custom CSS if needed)
+
+### CTA banner
+
+Add call-to-action banners to passports:
+
+```json CTA config
+{
+  "cta": {
+    "bannerBackgroundImage": "https://cdn.avelero.com/banners/sustainability.jpg",
+    "bannerHeadline": "Committed to Sustainability",
+    "bannerSubline": "Learn about our journey to carbon neutrality",
+    "bannerCTAText": "Read Our Story",
+    "bannerCTAUrl": "https://yourbrand.com/sustainability",
+    "showHeadline": true,
+    "showSubline": true,
+    "showButton": true
+  }
+}
+```
+
+**Visibility toggles:**
+- `showHeadline`, `showSubline`, `showButton` - Control which elements appear
+- Useful for A/B testing or seasonal campaigns
+- Banner hidden automatically if `sections.showCTABanner` is false
+
+### Social media links
+
+Connect passports to social profiles:
+
+```json Social config
+{
+  "social": {
+    "showInstagram": true,
+    "showFacebook": false,
+    "showTwitter": true,
+    "showPinterest": false,
+    "showTiktok": true,
+    "showLinkedin": false,
+    "instagramUrl": "https://instagram.com/yourbrand",
+    "twitterUrl": "https://twitter.com/yourbrand",
+    "tiktokUrl": "https://tiktok.com/@yourbrand"
+  }
+}
+```
+
+**Supported platforms:**
+Instagram, Facebook, Twitter/X, Pinterest, TikTok, LinkedIn
+
+### Section visibility
+
+Control which sections appear on passports:
+
+```json Section visibility
+{
+  "sections": {
+    "showProductDetails": true,
+    "showPrimaryMenu": true,
+    "showSecondaryMenu": true,
+    "showImpact": true,
+    "showMaterials": true,
+    "showJourney": true,
+    "showSimilarProducts": true,
+    "showCTABanner": false
+  }
+}
+```
+
+<Note>
+Sections with no data are hidden automatically, even if visibility is enabled. For example, if a product has no environmental impact data, the impact section won't display.
+</Note>
+
+### Materials section options
+
+Customize materials display:
+
+```json Materials config
+{
+  "materials": {
+    "showCertificationCheckIcon": true
+  }
+}
+```
+
+**Certification icon:**
+- When enabled, shows checkmark icon next to certified materials
+- Visually emphasizes sustainable material choices
+- Disable for minimal design aesthetic
+
+### Carousel configuration
+
+Customize the similar products carousel:
+
+```json Carousel config
+{
+  "carousel": {
+    "productCount": 6,
+    "showPrice": true,
+    "showTitle": true,
+    "roundPrice": false,
+    "includeIds": [],
+    "excludeIds": [],
+    "filter": {
+      "tags": ["featured", "bestseller"]
+    }
+  }
+}
+```
+
+**Options:**
+- `productCount` - Number of products to show (default: 6)
+- `showPrice`, `showTitle` - Toggle product info visibility
+- `roundPrice` - Round prices ($49.99 → $50)
+- `includeIds` - Specific product IDs to show
+- `excludeIds` - Product IDs to exclude
+- `filter` - Filter criteria (tags, category, season, etc.)
+
+## Editing themes
+
+### Via dashboard
+
+<Steps>
+  <Step title="Navigate to theme editor">
+    Go to **Settings** → **Brand settings** → **Theme**.
+  </Step>
+  
+  <Step title="Edit styles">
+    Switch to **Styles** tab to edit colors, typography, and component overrides.
+  </Step>
+  
+  <Step title="Edit configuration">
+    Switch to **Configuration** tab to edit menus, banners, and visibility.
+  </Step>
+  
+  <Step title="Save changes">
+    Click **Save** to apply changes to all passports immediately.
+  </Step>
+</Steps>
+
+### Via API
+
+Update theme programmatically:
+
+```typescript Update theme config
+import { trpc } from '@/lib/trpc';
+
+const result = await trpc.brand.theme.update.mutate({
+  config: {
+    menus: {
+      primary: [
+        { label: 'Shop', url: 'https://yourbrand.com/shop' }
+      ]
+    },
+    sections: {
+      showCTABanner: false
+    }
+  }
+});
+```
+
+**API methods:**
+- `brand.theme.get` - Fetch current theme (styles + config)
+- `brand.theme.update` - Update theme configuration
+
+<Info>
+Theme styles are updated separately via the dashboard. API updates are for programmatic config changes (e.g., enabling/disabling sections based on data availability).
+</Info>
+
+## Theme preview
+
+Test theme changes before publishing:
+
+<Steps>
+  <Step title="Enable preview mode">
+    Click **Preview** in theme editor.
+  </Step>
+  
+  <Step title="Select product">
+    Choose a product to preview with your theme.
+  </Step>
+  
+  <Step title="Test responsiveness">
+    Preview on different screen sizes (mobile, tablet, desktop).
+  </Step>
+  
+  <Step title="Iterate">
+    Make adjustments and preview again until satisfied.
+  </Step>
+</Steps>
+
+**Preview limitations:**
+- Preview uses draft theme (not yet saved)
+- Only you can see preview (not public)
+- Preview expires after session ends
+
+## Theme revalidation
+
+When theme changes are saved:
+
+1. **Database update** - Theme config/styles saved to `brand_theme` table
+2. **Cache invalidation** - Passport pages revalidated automatically
+3. **Immediate effect** - Changes apply to all passports within seconds
+
+**Revalidation implementation:**
+
+```typescript Automatic revalidation
+// After theme update
+const brand = await db.query.brands.findFirst({
+  where: eq(brands.id, brandId)
+});
+
+if (brand?.slug) {
+  // Revalidates all passport pages for this brand
+  await revalidateBrand(brand.slug);
+}
+```
+
+<Note>
+You don't need to republish passports when updating themes. Changes propagate automatically.
+</Note>
+
+## Best practices
+
+<CardGroup cols={2}>
+  <Card title="Use design tokens" icon="swatchbook">
+    Define colors and typography once in tokens, reference them in components. Makes global changes easier.
+  </Card>
+  
+  <Card title="Test with real data" icon="vial">
+    Preview theme with products that have varying data completeness to ensure graceful degradation.
+  </Card>
+  
+  <Card title="Maintain accessibility" icon="universal-access">
+    Ensure color contrast ratios meet WCAG AA (4.5:1 for body text, 3:1 for large text).
+  </Card>
+  
+  <Card title="Optimize assets" icon="gauge-high">
+    Compress images and fonts. Use modern formats (WebP, WOFF2) for better performance.
+  </Card>
+</CardGroup>
+
+## Accessibility checklist
+
+<AccordionGroup>
+  <Accordion title="Color contrast">
+    - Body text: 4.5:1 contrast ratio minimum
+    - Large text (18pt+): 3:1 contrast ratio minimum
+    - Use tools like [WebAIM Contrast Checker](https://webaim.org/resources/contrastchecker/)
+  </Accordion>
+  
+  <Accordion title="Font sizes">
+    - Body text: Minimum 16px (1rem)
+    - Small text: Minimum 14px (0.875rem)
+    - Ensure text is readable on mobile devices
+  </Accordion>
+  
+  <Accordion title="Focus states">
+    - Interactive elements must have visible focus indicators
+    - Don't remove default outline without replacing
+    - Test keyboard navigation (Tab key)
+  </Accordion>
+  
+  <Accordion title="Images">
+    - Ensure decorative images don't convey critical info
+    - Product images have alt text from product data
+    - Logos use brand name as alt text
+  </Accordion>
+</AccordionGroup>
+
+## Database schema
+
+Theme data is stored in the `brand_theme` table:
+
+<ResponseField name="brandId" type="uuid">
+  Primary key. One theme per brand.
+</ResponseField>
+
+<ResponseField name="themeStyles" type="jsonb">
+  Theme styles object (design tokens, component overrides, custom fonts)
+</ResponseField>
+
+<ResponseField name="themeConfig" type="jsonb">
+  Theme configuration object (menus, banners, visibility, social links)
+</ResponseField>
+
+<ResponseField name="googleFontsUrl" type="string">
+  Google Fonts embed URL (if using Google Fonts)
+</ResponseField>
+
+<ResponseField name="stylesheetPath" type="string">
+  CDN path to custom CSS stylesheet (if uploaded)
+</ResponseField>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Custom domains" icon="globe" href="/guides/custom-domains">
+    Serve passports from your own domain to strengthen branding.
+  </Card>
+  
+  <Card title="Brand customization" icon="palette" href="/features/brand-customization">
+    Learn more about brand-wide customization features.
+  </Card>
+</CardGroup>

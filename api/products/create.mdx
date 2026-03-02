@@ -1,0 +1,328 @@
+---
+title: Create products
+description: Create new products with attributes, materials, and environmental data
+---
+
+Create a new product in your brand's catalog. Products can include basic information, attributes like materials and environmental impact, and journey steps.
+
+## Endpoint
+
+```typescript
+trpc.products.create.mutate(input)
+```
+
+**Router location**: `apps/api/src/trpc/routers/products/index.ts:319`
+
+## Request parameters
+
+<ParamField path="name" type="string" required>
+  Product name (1-100 characters)
+  
+  **Example**: `"Organic Cotton T-Shirt"`
+</ParamField>
+
+<ParamField path="brand_id" type="string" required>
+  UUID of the brand. Must match the active brand context.
+  
+  **Validation**: Must be a valid UUID v4 format
+</ParamField>
+
+<ParamField path="product_handle" type="string">
+  URL-friendly identifier for the product. Used in DPP URLs: `/[brandSlug]/[productHandle]/`
+  
+  If not provided, auto-generated from the product name.
+  
+  **Format**: Lowercase letters, numbers, and dashes only (1-100 characters)
+  
+  **Example**: `"organic-cotton-tee"`
+</ParamField>
+
+<ParamField path="description" type="string">
+  Product description (max 2000 characters)
+  
+  **Example**: `"A sustainable t-shirt made from 100% organic cotton."`
+</ParamField>
+
+<ParamField path="category_id" type="string">
+  UUID of the product category
+</ParamField>
+
+<ParamField path="season_id" type="string">
+  UUID of the brand season (from `brand_seasons` table)
+</ParamField>
+
+<ParamField path="manufacturer_id" type="string">
+  UUID of the manufacturer
+</ParamField>
+
+<ParamField path="image_path" type="string">
+  Storage path for the product image (max 500 characters). Not the full URL.
+  
+  **Example**: `"brand-id/products/image.jpg"`
+</ParamField>
+
+<ParamField path="status" type="string">
+  Product status
+  
+  **Values**: `"draft"` or `"published"`
+  
+  **Default**: `"draft"`
+</ParamField>
+
+<ParamField path="tag_ids" type="string[]">
+  Array of tag UUIDs to associate with the product
+</ParamField>
+
+### Materials
+
+<ParamField path="materials" type="array">
+  Array of material compositions for the product
+  
+  <Expandable title="Material object properties">
+    <ParamField path="brand_material_id" type="string" required>
+      UUID of the brand material
+    </ParamField>
+    
+    <ParamField path="percentage" type="string | number">
+      Percentage of this material in the product
+      
+      **Example**: `50` or `"50"`
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+### Journey steps
+
+<ParamField path="journey_steps" type="array">
+  Array of production journey steps (e.g., "Design", "Manufacturing", "Distribution")
+  
+  <Expandable title="Journey step properties">
+    <ParamField path="sort_index" type="number" required>
+      Display order (0-based)
+    </ParamField>
+    
+    <ParamField path="step_type" type="string" required>
+      Type of step (1-100 characters)
+      
+      **Example**: `"Manufacturing"`
+    </ParamField>
+    
+    <ParamField path="operator_ids" type="string[]" required>
+      Array of operator UUIDs involved in this step
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+### Environmental data
+
+<ParamField path="environment" type="object">
+  Environmental impact metrics
+  
+  <Expandable title="Environment properties">
+    <ParamField path="carbon_kg_co2e" type="string | number">
+      Carbon footprint in kg CO2e
+      
+      **Example**: `12.5` or `"12.5"`
+    </ParamField>
+    
+    <ParamField path="water_liters" type="string | number">
+      Water usage in liters
+      
+      **Example**: `2500` or `"2500"`
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+### Weight
+
+<ParamField path="weight" type="object">
+  Product weight information
+  
+  <Expandable title="Weight properties">
+    <ParamField path="weight" type="string | number">
+      Weight value
+      
+      **Example**: `250` or `"250"`
+    </ParamField>
+    
+    <ParamField path="weight_unit" type="string">
+      Unit of weight
+      
+      **Default**: `"g"`
+      
+      **Example**: `"g"`, `"kg"`
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+## Response
+
+Returns the created product object.
+
+<ResponseField name="data" type="object">
+  The created product
+  
+  <Expandable title="Product properties">
+    <ResponseField name="id" type="string">
+      UUID of the created product
+    </ResponseField>
+    
+    <ResponseField name="name" type="string">
+      Product name
+    </ResponseField>
+    
+    <ResponseField name="product_handle" type="string">
+      URL-friendly product identifier
+    </ResponseField>
+    
+    <ResponseField name="upid" type="string">
+      16-character unique product identifier (auto-generated)
+    </ResponseField>
+    
+    <ResponseField name="brand_id" type="string">
+      UUID of the brand
+    </ResponseField>
+    
+    <ResponseField name="status" type="string">
+      Product status
+    </ResponseField>
+    
+    <ResponseField name="created_at" type="string">
+      ISO 8601 timestamp
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Example requests
+
+### Basic product
+
+```typescript
+const product = await trpc.products.create.mutate({
+  brand_id: "550e8400-e29b-41d4-a716-446655440000",
+  name: "Organic Cotton T-Shirt",
+  description: "A sustainable t-shirt made from 100% organic cotton.",
+  status: "draft"
+});
+
+console.log(product.data.upid); // "A1B2C3D4E5F6G7H8"
+console.log(product.data.product_handle); // "organic-cotton-t-shirt"
+```
+
+### Product with custom handle
+
+```typescript
+const product = await trpc.products.create.mutate({
+  brand_id: "550e8400-e29b-41d4-a716-446655440000",
+  name: "Summer Collection Hoodie 2024",
+  product_handle: "summer-hoodie-24",
+  category_id: "category-uuid",
+  season_id: "season-uuid"
+});
+```
+
+### Product with materials and environment
+
+```typescript
+const product = await trpc.products.create.mutate({
+  brand_id: "550e8400-e29b-41d4-a716-446655440000",
+  name: "Recycled Polyester Jacket",
+  description: "Water-resistant jacket made from recycled materials",
+  materials: [
+    {
+      brand_material_id: "material-uuid-1",
+      percentage: 80
+    },
+    {
+      brand_material_id: "material-uuid-2",
+      percentage: 20
+    }
+  ],
+  environment: {
+    carbon_kg_co2e: "15.5",
+    water_liters: "3200"
+  },
+  weight: {
+    weight: "450",
+    weight_unit: "g"
+  }
+});
+```
+
+### Product with journey steps
+
+```typescript
+const product = await trpc.products.create.mutate({
+  brand_id: "550e8400-e29b-41d4-a716-446655440000",
+  name: "Premium Denim Jeans",
+  journey_steps: [
+    {
+      sort_index: 0,
+      step_type: "Design",
+      operator_ids: ["operator-uuid-1"]
+    },
+    {
+      sort_index: 1,
+      step_type: "Manufacturing",
+      operator_ids: ["operator-uuid-2", "operator-uuid-3"]
+    },
+    {
+      sort_index: 2,
+      step_type: "Distribution",
+      operator_ids: ["operator-uuid-4"]
+    }
+  ]
+});
+```
+
+## Error codes
+
+<ResponseField name="BAD_REQUEST" type="error">
+  Invalid input or validation error
+  
+  **Common causes**:
+  - Product name is empty or too long
+  - Invalid product handle format (must be lowercase letters, numbers, and dashes)
+  - Product handle already exists for this brand
+  - Active brand does not match `brand_id`
+  - Invalid UUID format for IDs
+  - Materials percentage exceeds 100%
+</ResponseField>
+
+<ResponseField name="INTERNAL_SERVER_ERROR" type="error">
+  Unexpected error during product creation
+  
+  **Message**: `"Failed to create product"`
+</ResponseField>
+
+## Validation rules
+
+- **Product name**: 1-100 characters, required
+- **Product handle**: Must be lowercase letters, numbers, and dashes only (no leading/trailing dashes)
+- **Description**: Max 2000 characters
+- **Image path**: Max 500 characters
+- **Material percentage**: Can be string or number
+- **Journey step operator_ids**: Must have at least one operator per step
+- **Brand ID**: Must match the active brand context
+
+## Notes
+
+<Note>
+  If `product_handle` is not provided, it will be auto-generated from the product name using the `generateProductHandle()` function.
+  
+  **Example**: "Special Pants" → "special-pants"
+</Note>
+
+<Note>
+  The `upid` (Unique Product Identifier) is always auto-generated as a 16-character alphanumeric string. You cannot provide a custom UPID.
+</Note>
+
+<Warning>
+  Setting `status` to `"published"` will make the product visible in public DPP pages, but the product must have at least one variant with a published passport to be fully functional.
+</Warning>
+
+## Source code reference
+
+- **Schema definition**: `apps/api/src/schemas/products.ts:221` (`productsDomainCreateSchema`)
+- **Implementation**: `apps/api/src/trpc/routers/products/index.ts:319`
+- **Database query**: `@v1/db/queries/products` (`createProduct`)

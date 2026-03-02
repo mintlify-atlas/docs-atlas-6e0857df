@@ -1,0 +1,190 @@
+---
+title: Integrations overview
+description: Connect Avelero with your e-commerce platform and manage product data at scale
+---
+
+Avelero's integration system allows you to sync product data from external platforms, manage data ownership, and maintain up-to-date Digital Product Passports across your entire catalog.
+
+## Available integrations
+
+<CardGroup cols={2}>
+  <Card title="Shopify" icon="shopify" href="/integrations/shopify">
+    Two-way sync with your Shopify store. Automatically import products and keep them updated.
+  </Card>
+  
+  <Card title="Bulk import/export" icon="file-excel" href="/integrations/bulk-import-export">
+    Import and export products using Excel files. Perfect for one-time migrations or manual updates.
+  </Card>
+</CardGroup>
+
+## How integrations work
+
+### Primary vs. secondary integrations
+
+Avelero uses a **primary integration** model to manage product grouping:
+
+- **Primary integration**: Defines how variants are grouped into products. This determines your product structure in Avelero.
+- **Secondary integrations**: Enrich existing products with additional data (SKUs, barcodes, custom attributes).
+
+You can only have one primary integration at a time. When you promote a secondary integration to primary, Avelero automatically re-groups your variants based on the new primary's product structure.
+
+<Note>
+For example, if Shopify is your primary integration, products are grouped by Shopify's product structure. If you later connect a PIM system and promote it to primary, variants will be re-grouped according to the PIM's structure.
+</Note>
+
+### Field ownership
+
+Each integration can "own" specific fields. When an integration owns a field:
+
+- That field's value comes from the integration during sync
+- Manual edits to that field in Avelero will be overwritten on the next sync
+- Other integrations cannot write to owned fields
+
+**Default ownership:**
+- Primary integration: Owns product structure and core fields (name, description, images)
+- Secondary integrations: Own only identifiers (SKU, barcode) by default
+
+You can customize field ownership in the integration settings to control exactly which data comes from which source.
+
+### Sync behavior
+
+**Automatic syncs:**
+- Scheduled based on sync interval (default: 24 hours)
+- Triggered by webhooks (for supported integrations)
+
+**Manual syncs:**
+- Click **Sync now** in the integration settings
+- Useful for testing or immediate updates
+
+**What gets synced:**
+- New products and variants are created
+- Existing products are updated based on field ownership
+- Deleted products in the source are NOT deleted in Avelero (soft-delete behavior)
+
+## Authentication methods
+
+### OAuth (Shopify)
+
+OAuth integrations use a secure authorization flow:
+
+1. Click **Connect** in Avelero
+2. Authorize access in the external platform
+3. Credentials are encrypted and stored securely
+4. Access tokens are automatically refreshed
+
+### API key (future integrations)
+
+API key integrations require manual credential entry:
+
+1. Generate an API key in the external platform
+2. Paste the key into Avelero's connection form
+3. Test the connection before saving
+
+## Connection status
+
+Integrations have the following statuses:
+
+- **Active**: Connected and syncing normally
+- **Paused**: Connected but syncing is disabled
+- **Error**: Connection or sync failed (check error message)
+- **Disconnected**: Integration was removed
+
+## Data flow
+
+```mermaid
+graph LR
+    A[External Platform] -->|Sync| B[Avelero]
+    B -->|Field Ownership| C[Product Catalog]
+    C -->|Generate| D[Digital Passports]
+    D -->|Public URL| E[Consumers]
+```
+
+1. **External platform** → Avelero syncs product data based on field ownership rules
+2. **Avelero** → Products are validated and stored in the catalog
+3. **Catalog** → Digital Product Passports are generated automatically
+4. **Passports** → Accessible via public URLs or QR codes
+
+## Best practices
+
+<AccordionGroup>
+  <Accordion title="Choose the right primary integration">
+    Your primary integration should be your **source of truth** for product structure. This is typically:
+    - Your e-commerce platform (Shopify, WooCommerce)
+    - Your PIM system (if you have one)
+    - Bulk import (for full control over product grouping)
+  </Accordion>
+
+  <Accordion title="Use secondary integrations for enrichment">
+    Connect secondary integrations to add:
+    - Alternative identifiers (SKUs from ERP, barcodes from warehouse system)
+    - Localized content (translations, regional descriptions)
+    - Technical specs (from PLM systems)
+  </Accordion>
+
+  <Accordion title="Configure field ownership carefully">
+    - Review default ownership settings after connecting
+    - Disable ownership for fields you want to edit manually in Avelero
+    - Document which system owns which fields for your team
+  </Accordion>
+
+  <Accordion title="Test before going live">
+    1. Connect integration in test/staging environment first
+    2. Run a manual sync with a small product subset
+    3. Verify field mappings and ownership
+    4. Check that Digital Passports display correctly
+  </Accordion>
+</AccordionGroup>
+
+## Common scenarios
+
+### Migrating from Shopify to a PIM
+
+<Steps>
+  <Step title="Connect Shopify as primary">
+    Initial setup imports all products with Shopify's product structure.
+  </Step>
+  
+  <Step title="Connect PIM as secondary">
+    PIM enriches products with additional data (sustainability info, supply chain details).
+  </Step>
+  
+  <Step title="Promote PIM to primary">
+    When ready, promote PIM to primary. Variants will be re-grouped according to PIM's product structure.
+  </Step>
+  
+  <Step title="Adjust field ownership">
+    Configure which fields come from PIM vs. Shopify (e.g., PIM owns descriptions, Shopify owns prices).
+  </Step>
+</Steps>
+
+### One-time data migration
+
+<Steps>
+  <Step title="Export from source system">
+    Export products to CSV/Excel from your current system.
+  </Step>
+  
+  <Step title="Format for Avelero">
+    Download Avelero's Excel template and map your data to the correct columns.
+  </Step>
+  
+  <Step title="Bulk import">
+    Import the Excel file using **CREATE** mode to create all products at once.
+  </Step>
+  
+  <Step title="Connect ongoing sync">
+    Optionally connect Shopify or another integration to keep data updated.
+  </Step>
+</Steps>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Connect Shopify" icon="shopify" href="/integrations/shopify">
+    Set up OAuth connection and configure product sync.
+  </Card>
+  
+  <Card title="Bulk import/export" icon="file-excel" href="/integrations/bulk-import-export">
+    Learn the Excel template format and import products in bulk.
+  </Card>
+</CardGroup>

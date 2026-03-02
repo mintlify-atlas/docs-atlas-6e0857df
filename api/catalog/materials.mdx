@@ -1,0 +1,420 @@
+---
+title: Materials API
+description: Manage brand materials with certifications, recyclability, and country of origin tracking
+---
+
+Materials represent the raw materials and fabrics used in your products. Materials can reference certifications, track recyclability status, and specify country of origin for transparency.
+
+## List materials
+
+Retrieve all materials for your brand with usage metrics.
+
+```typescript
+const result = await trpc.catalog.materials.list.query();
+```
+
+### Response
+
+Returns an array of materials with product usage counts:
+
+<ResponseField name="data" type="array" required>
+  Array of material objects
+  
+  <ResponseField name="id" type="string" required>
+    Unique identifier (UUID)
+  </ResponseField>
+  
+  <ResponseField name="name" type="string" required>
+    Material name (e.g., "Organic Cotton", "Recycled Polyester")
+  </ResponseField>
+  
+  <ResponseField name="certification_id" type="string | null">
+    UUID of associated certification (if certified)
+  </ResponseField>
+  
+  <ResponseField name="recyclable" type="boolean | null">
+    Whether the material is recyclable
+    
+    - `true`: Recyclable
+    - `false`: Not recyclable
+    - `null`: Unknown/not specified
+  </ResponseField>
+  
+  <ResponseField name="country_of_origin" type="string | null">
+    ISO 3166-1 alpha-2 country code (e.g., "US", "GB", "IT")
+  </ResponseField>
+  
+  <ResponseField name="products_count" type="number" required>
+    Number of products using this material (includes both product-level and variant-level usage)
+  </ResponseField>
+  
+  <ResponseField name="created_at" type="string" required>
+    ISO 8601 timestamp
+  </ResponseField>
+  
+  <ResponseField name="updated_at" type="string" required>
+    ISO 8601 timestamp
+  </ResponseField>
+</ResponseField>
+
+<Note>
+  The `products_count` metric aggregates unique products that use this material, whether attached at the product level or variant level.
+</Note>
+
+## Create material
+
+Create a new material entry.
+
+```typescript
+const result = await trpc.catalog.materials.create.mutate({
+  name: "Organic Cotton",
+  certification_id: "550e8400-e29b-41d4-a716-446655440000",
+  recyclable: true,
+  country_of_origin: "US"
+});
+```
+
+### Request
+
+<ParamField path="name" type="string" required>
+  Material name (1-100 characters)
+  
+  Examples: "Organic Cotton", "Recycled Polyester", "Merino Wool", "Hemp Blend"
+</ParamField>
+
+<ParamField path="certification_id" type="string">
+  UUID of a certification from your brand's certifications catalog
+  
+  Links this material to a certification (e.g., GOTS, OEKO-TEX, Fair Trade).
+</ParamField>
+
+<ParamField path="recyclable" type="boolean">
+  Whether the material is recyclable
+  
+  Leave unset if recyclability is unknown or not applicable.
+</ParamField>
+
+<ParamField path="country_of_origin" type="string">
+  ISO 3166-1 alpha-2 country code (2 uppercase letters)
+  
+  Examples: `"US"`, `"GB"`, `"IT"`, `"IN"`, `"CN"`
+</ParamField>
+
+### Response
+
+<ResponseField name="data" type="object" required>
+  <ResponseField name="id" type="string" required>
+    ID of the created material
+  </ResponseField>
+</ResponseField>
+
+### Validation rules
+
+- `name` is required and must be 1-100 characters
+- Material names must be unique per brand (case-sensitive)
+- `certification_id` must reference an existing certification if provided
+- `country_of_origin` is automatically converted to uppercase
+- `country_of_origin` must be exactly 2 characters
+
+### Error handling
+
+<CodeGroup>
+```json Duplicate Name
+{
+  "code": "BAD_REQUEST",
+  "message": "A material with this name already exists"
+}
+```
+
+```json Invalid Country Code
+{
+  "code": "BAD_REQUEST",
+  "message": "Country code must be exactly 2 characters"
+}
+```
+
+```json Invalid Certification
+{
+  "code": "INTERNAL_SERVER_ERROR",
+  "message": "Failed to create material"
+}
+```
+</CodeGroup>
+
+## Update material
+
+Update an existing material.
+
+```typescript
+const result = await trpc.catalog.materials.update.mutate({
+  id: "550e8400-e29b-41d4-a716-446655440000",
+  recyclable: true,
+  country_of_origin: "IT"
+});
+```
+
+### Request
+
+<ParamField path="id" type="string" required>
+  Material ID (UUID)
+</ParamField>
+
+<ParamField path="name" type="string">
+  New material name (1-100 characters)
+</ParamField>
+
+<ParamField path="certification_id" type="string | null">
+  Update or clear certification link
+  
+  - Pass a UUID to link a certification
+  - Pass `null` to remove the certification link
+  - Omit to leave unchanged
+</ParamField>
+
+<ParamField path="recyclable" type="boolean | null">
+  Update recyclability status
+  
+  - Pass `true` or `false` to set status
+  - Pass `null` to clear/unset
+  - Omit to leave unchanged
+</ParamField>
+
+<ParamField path="country_of_origin" type="string | null">
+  Update or clear country of origin
+  
+  - Pass a 2-letter country code to set
+  - Pass `null` to clear
+  - Omit to leave unchanged
+</ParamField>
+
+### Response
+
+<ResponseField name="data" type="object" required>
+  <ResponseField name="id" type="string" required>
+    ID of the updated material
+  </ResponseField>
+</ResponseField>
+
+<Note>
+  Only provided fields are updated. Omitted fields remain unchanged. To explicitly clear a nullable field, pass `null`.
+</Note>
+
+### Error handling
+
+<CodeGroup>
+```json Not Found
+{
+  "code": "NOT_FOUND",
+  "message": "material with ID '...' not found"
+}
+```
+
+```json Duplicate Name
+{
+  "code": "BAD_REQUEST",
+  "message": "A material with this name already exists"
+}
+```
+</CodeGroup>
+
+## Delete material
+
+Delete a material from your catalog.
+
+```typescript
+const result = await trpc.catalog.materials.delete.mutate({
+  id: "550e8400-e29b-41d4-a716-446655440000"
+});
+```
+
+### Request
+
+<ParamField path="id" type="string" required>
+  Material ID (UUID)
+</ParamField>
+
+### Response
+
+<ResponseField name="data" type="object" required>
+  <ResponseField name="id" type="string" required>
+    ID of the deleted material
+  </ResponseField>
+</ResponseField>
+
+<Warning>
+  Deleting a material does not check for product references. If products reference this material, they will lose that reference.
+</Warning>
+
+### Error handling
+
+<CodeGroup>
+```json Not Found
+{
+  "code": "NOT_FOUND",
+  "message": "material with ID '...' not found"
+}
+```
+</CodeGroup>
+
+## TypeScript types
+
+All procedures are fully typed when using the tRPC client:
+
+```typescript
+import type { AppRouter } from "@v1/api";
+import { createTRPCClient } from "@trpc/client";
+
+const trpc = createTRPCClient<AppRouter>({
+  // ... config
+});
+
+// Fully typed request and response
+const result = await trpc.catalog.materials.create.mutate({
+  name: "Organic Cotton",
+  certification_id: "...",
+  recyclable: true,
+  country_of_origin: "US"
+});
+// result.data.id is typed as string
+
+// Type inference for list results
+const list = await trpc.catalog.materials.list.query();
+// list.data is typed as Material[]
+for (const material of list.data) {
+  console.log(material.name); // typed as string
+  console.log(material.recyclable); // typed as boolean | null
+  console.log(material.products_count); // typed as number
+}
+```
+
+### Schema types
+
+```typescript
+// Request schemas
+type CreateMaterialSchema = {
+  name: string; // 1-100 chars
+  certification_id?: string; // UUID
+  recyclable?: boolean;
+  country_of_origin?: string; // 2-char uppercase
+};
+
+type UpdateMaterialSchema = {
+  id: string; // UUID, required
+  name?: string; // 1-100 chars
+  certification_id?: string | null; // UUID or null to clear
+  recyclable?: boolean | null; // or null to clear
+  country_of_origin?: string | null; // 2-char uppercase or null to clear
+};
+
+type DeleteMaterialSchema = {
+  id: string; // UUID
+};
+
+// Response types
+type Material = {
+  id: string;
+  name: string;
+  certification_id: string | null;
+  recyclable: boolean | null;
+  country_of_origin: string | null;
+  created_at: string; // ISO 8601
+  updated_at: string; // ISO 8601
+};
+
+type MaterialWithMetrics = Material & {
+  products_count: number;
+};
+```
+
+## Common patterns
+
+### Creating certified sustainable materials
+
+```typescript
+// 1. First, create the certification
+const cert = await trpc.catalog.certifications.create.mutate({
+  title: "GOTS (Global Organic Textile Standard)",
+  certification_code: "GOTS-2024-001",
+  institute_name: "Control Union",
+  issue_date: "2024-01-15T00:00:00Z",
+  expiry_date: "2025-01-15T00:00:00Z"
+});
+
+// 2. Create material linked to certification
+const material = await trpc.catalog.materials.create.mutate({
+  name: "GOTS Certified Organic Cotton",
+  certification_id: cert.data.id,
+  recyclable: true,
+  country_of_origin: "IN"
+});
+```
+
+### Finding materials by usage
+
+```typescript
+const materials = await trpc.catalog.materials.list.query();
+
+// Find most-used materials
+const popular = materials.data
+  .filter(m => m.products_count > 0)
+  .sort((a, b) => b.products_count - a.products_count)
+  .slice(0, 10);
+
+// Find unused materials for cleanup
+const unused = materials.data.filter(m => m.products_count === 0);
+```
+
+### Filtering by attributes
+
+```typescript
+const materials = await trpc.catalog.materials.list.query();
+
+// Find all recyclable materials
+const recyclable = materials.data.filter(m => m.recyclable === true);
+
+// Find materials from specific country
+const italian = materials.data.filter(m => m.country_of_origin === "IT");
+
+// Find certified materials
+const certified = materials.data.filter(m => m.certification_id !== null);
+```
+
+### Updating certification links
+
+```typescript
+// Link material to certification
+await trpc.catalog.materials.update.mutate({
+  id: materialId,
+  certification_id: certificationId
+});
+
+// Remove certification link
+await trpc.catalog.materials.update.mutate({
+  id: materialId,
+  certification_id: null
+});
+```
+
+## Integration with products
+
+Materials can be attached to products at two levels:
+
+### Product-level materials
+
+When all variants share the same materials:
+
+```typescript
+// Add material to product via product_materials table
+// (handled through products API)
+```
+
+### Variant-level materials
+
+When different variants use different materials:
+
+```typescript
+// Add material to specific variant via variant_materials table
+// (handled through variants API)
+```
+
+The `products_count` metric in the list response aggregates both levels, counting unique products.

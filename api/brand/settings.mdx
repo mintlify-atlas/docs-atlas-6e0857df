@@ -1,0 +1,158 @@
+---
+title: Brand settings
+description: Manage brand profile information including name, slug, logo, and contact details
+---
+
+## Update brand settings
+
+<Note>
+Only brand **owners** can update brand settings.
+</Note>
+
+```typescript
+const result = await trpc.brand.update.mutate({
+  id: "brand-uuid",
+  name: "Acme Clothing",
+  slug: "acme-clothing",
+  email: "contact@acme.com",
+  country_code: "US",
+  logo_url: "/api/storage/brand-avatars/logo.png"
+});
+```
+
+### Input parameters
+
+<ParamField path="id" type="string" required>
+  UUID of the brand to update
+</ParamField>
+
+<ParamField path="name" type="string">
+  Brand display name
+  
+  **Validation:** 1-100 characters
+</ParamField>
+
+<ParamField path="slug" type="string">
+  URL-friendly brand identifier used in Digital Product Passport URLs
+  
+  **Validation:**
+  - 2-50 characters
+  - Only lowercase letters, numbers, and dashes
+  - No leading or trailing dashes
+  - Must be unique across all brands
+  
+  **Example:** `acme-clothing`, `sustainable-brand-123`
+</ParamField>
+
+<ParamField path="email" type="string">
+  Brand contact email address
+  
+  **Validation:** Valid email format
+</ParamField>
+
+<ParamField path="country_code" type="string">
+  ISO 3166-1 alpha-2 country code
+  
+  **Validation:** 2-letter uppercase code
+  
+  **Example:** `US`, `GB`, `DE`, `FR`
+</ParamField>
+
+<ParamField path="logo_url" type="string">
+  Brand logo image URL or storage path
+  
+  **Note:** When providing a logo URL, the system extracts the storage path from known prefixes like `/api/storage/brand-avatars/`
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="boolean">
+  Returns `true` if the update was successful
+</ResponseField>
+
+<ResponseField name="slug" type="string | null">
+  The brand's current slug after update
+</ResponseField>
+
+### Behavior
+
+- **Slug validation**: If updating the slug, the system checks for uniqueness before applying the change
+- **Cache revalidation**: When the slug changes, both the old and new slug paths are revalidated to update cached Digital Product Passport pages
+- **Active brand check**: The active brand in context must match the brand being updated
+
+### Errors
+
+- `400 Bad Request`: Slug is already taken by another brand
+- `400 Bad Request`: Active brand does not match the brand being updated
+- `403 Forbidden`: User is not a brand owner
+
+---
+
+## Delete brand
+
+<Warning>
+Deleting a brand is a **soft-delete** operation that triggers background cleanup. Only brand **owners** can delete brands.
+</Warning>
+
+```typescript
+const result = await trpc.brand.delete.mutate({
+  brand_id: "brand-uuid"
+});
+```
+
+### Input parameters
+
+<ParamField path="brand_id" type="string" required>
+  UUID of the brand to delete
+</ParamField>
+
+### Behavior
+
+The deletion process happens in two stages:
+
+1. **Immediate soft-delete**:
+   - Sets `deleted_at` timestamp on the brand record
+   - Updates affected users' active brand if needed
+   - Returns immediately
+
+2. **Background cleanup** (triggered asynchronously):
+   - Deletes products in batches
+   - Cleans up storage files (avatars, product images)
+   - Hard-deletes the brand record
+
+<Note>
+If the background job fails to trigger, the brand is still soft-deleted and the cleanup job can be manually re-triggered.
+</Note>
+
+### Errors
+
+- `400 Bad Request`: Brand ID is required
+- `403 Forbidden`: User is not a brand owner
+
+---
+
+## Check slug availability
+
+Validate if a slug is available for use, typically during real-time validation while editing.
+
+```typescript
+const { available } = await trpc.brand.checkSlug.query({
+  slug: "my-new-brand"
+});
+```
+
+### Input parameters
+
+<ParamField path="slug" type="string" required>
+  Slug to check for availability
+  
+  **Validation:** Minimum 1 character
+</ParamField>
+
+### Response
+
+<ResponseField name="available" type="boolean">
+  Returns `true` if the slug is available, `false` if already taken by another brand
+  
+  **Note:** Excludes the current brand from the availability check (you can keep your own slug)
+</ResponseField>

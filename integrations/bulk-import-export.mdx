@@ -1,0 +1,674 @@
+---
+title: Bulk import and export
+description: Import and export products using Excel files for one-time migrations, manual updates, and data backups
+---
+
+Bulk import/export allows you to manage product data at scale using Excel files. Perfect for initial data migration, manual enrichment, and periodic backups.
+
+## Features
+
+- **Excel-based workflow**: Use familiar spreadsheet format with templates
+- **Product and variant support**: Import products with multiple variants, attributes, and materials
+- **Two import modes**: Create new products or enrich existing ones
+- **Validation and error reporting**: Catch issues before committing data
+- **Export to Excel**: Download your product catalog for backup or external processing
+- **Failed row recovery**: Generate correction files with errors highlighted in red
+
+## Import workflow
+
+### Step 1: Download template
+
+<Steps>
+  <Step title="Navigate to Products">
+    Go to **Products** in your Avelero dashboard.
+  </Step>
+  
+  <Step title="Open import modal">
+    Click **Import** in the top right corner.
+  </Step>
+  
+  <Step title="Download template">
+    Click **Download Excel template** to get the latest template with correct headers.
+  </Step>
+</Steps>
+
+<Note>
+Always use the latest template from Avelero to ensure column headers match the current schema.
+</Note>
+
+### Step 2: Prepare your data
+
+Fill in the Excel template with your product data:
+
+**Required columns:**
+- `Product Handle`: Unique identifier for the product (e.g., `summer-dress-2024`)
+- `Product Name`: Display name (e.g., `Summer Dress`)
+- At least one variant row per product
+
+**Product-level columns:**
+
+<ResponseField name="Product Handle" type="string" required>
+  Unique slug for the product. Used to match existing products during enrichment.
+  
+  **Format:** Lowercase, alphanumeric with hyphens (e.g., `organic-cotton-tee`)
+</ResponseField>
+
+<ResponseField name="Product Name" type="string" required>
+  Display name shown on Digital Passports.
+</ResponseField>
+
+<ResponseField name="Description" type="string">
+  Product description (plain text or Markdown).
+</ResponseField>
+
+<ResponseField name="Status" type="enum">
+  Publication status: `published`, `unpublished`, `archived`
+  
+  **Default:** `unpublished`
+</ResponseField>
+
+<ResponseField name="Category" type="string">
+  Category path using forward slashes (e.g., `Apparel/Tops/T-Shirts`)
+</ResponseField>
+
+<ResponseField name="Season" type="string">
+  Season name (e.g., `Spring/Summer 2024`). Must match an existing season in your catalog or will be created.
+</ResponseField>
+
+<ResponseField name="Manufacturer" type="string">
+  Manufacturer name. Must match an existing manufacturer or will be created.
+</ResponseField>
+
+<ResponseField name="Image Path" type="string">
+  URL or path to product image.
+</ResponseField>
+
+<ResponseField name="Tags" type="string">
+  Comma-separated list of tags (e.g., `organic, sustainable, fair-trade`)
+</ResponseField>
+
+**Variant-level columns:**
+
+<ResponseField name="UPID" type="string">
+  Universal Product ID. Unique identifier for the variant. Used for matching during enrichment.
+</ResponseField>
+
+<ResponseField name="SKU" type="string">
+  Stock Keeping Unit. Internal identifier.
+</ResponseField>
+
+<ResponseField name="Barcode" type="string">
+  Product barcode (UPC, EAN, etc.).
+</ResponseField>
+
+<ResponseField name="Attributes" type="object">
+  Variant attributes as separate columns with `Attribute: ` prefix:
+  - `Attribute: Size` → `Small`
+  - `Attribute: Color` → `Blue`
+  - `Attribute: Material` → `Organic Cotton`
+  
+  Attributes are sorted alphabetically by column name to determine variant title.
+</ResponseField>
+
+**Material composition:**
+
+<ResponseField name="Materials" type="string">
+  Comma-separated materials with optional percentages:
+  
+  - `Organic Cotton 95%, Elastane 5%`
+  - `Polyester, Cotton` (percentages optional)
+  
+  Materials must match existing materials in catalog or will be created.
+</ResponseField>
+
+**Environmental data:**
+
+<ResponseField name="Carbon Footprint (kg)" type="number">
+  Total carbon emissions in kilograms CO₂e.
+</ResponseField>
+
+<ResponseField name="Carbon Status" type="enum">
+  Status of carbon calculation: `calculated`, `estimated`, `certified`
+</ResponseField>
+
+<ResponseField name="Water Usage (liters)" type="number">
+  Total water consumption in liters.
+</ResponseField>
+
+<ResponseField name="Weight (grams)" type="number">
+  Product weight in grams.
+</ResponseField>
+
+**Journey/supply chain:**
+
+<ResponseField name="Journey steps" type="object">
+  Supply chain steps as columns with `Journey: ` prefix:
+  - `Journey: Raw Materials` → `Organic Cotton Farm, India`
+  - `Journey: Manufacturing` → `Fair Trade Factory, Bangladesh`
+  - `Journey: Distribution` → `Warehouse, Netherlands`
+</ResponseField>
+
+### Step 3: Upload and validate
+
+<Steps>
+  <Step title="Upload file">
+    Click **Choose file** and select your Excel file (.xlsx or .xls).
+  </Step>
+  
+  <Step title="Preview import">
+    Avelero parses the file and shows:
+    - Total products and variants
+    - Preview of first product
+    - Summary statistics
+  </Step>
+  
+  <Step title="Choose import mode">
+    Select import mode:
+    
+    **CREATE**: Create new products only. Products with existing handles are skipped.
+    
+    **CREATE_AND_ENRICH**: Create new products AND update existing products. Products are matched by handle, variants by UPID.
+  </Step>
+  
+  <Step title="Start import">
+    Click **Import** to begin background processing.
+  </Step>
+</Steps>
+
+### Step 4: Monitor progress
+
+Imports run in the background:
+
+1. **Validation phase**: Rows are validated against schema and catalog
+2. **Commit phase**: Valid rows are inserted into the database
+3. **Completion**: Import job shows final results
+
+**Status indicators:**
+- ✅ **COMPLETED**: All rows imported successfully
+- ⚠️ **COMPLETED_WITH_FAILURES**: Some rows imported, some failed
+- ❌ **FAILED**: Import job failed (system error)
+
+### Step 5: Handle errors
+
+If rows fail validation:
+
+<Steps>
+  <Step title="View errors">
+    Click **View errors** in the import status modal.
+  </Step>
+  
+  <Step title="Download correction file">
+    Click **Download corrections** to get an Excel file with:
+    - Failed rows highlighted in red
+    - Error messages in adjacent column
+    - All original data preserved
+  </Step>
+  
+  <Step title="Fix errors">
+    Correct the errors in the downloaded file.
+  </Step>
+  
+  <Step title="Re-import">
+    Upload the corrected file as a new import.
+  </Step>
+</Steps>
+
+## Import modes
+
+### CREATE mode
+
+**Use when:** You're adding new products to Avelero for the first time.
+
+**Behavior:**
+- Products with new handles are created
+- Products with existing handles are **skipped** (not updated)
+- All variants in the row are created for new products
+
+**Example:**
+
+| Product Handle | Product Name | UPID | SKU |
+|----------------|-------------|------|-----|
+| tee-001 | Basic Tee | UPID-001 | SKU-001 |
+| tee-001 | Basic Tee | UPID-002 | SKU-002 |
+| tee-002 | V-Neck Tee | UPID-003 | SKU-003 |
+
+- If `tee-001` doesn't exist: Create product with 2 variants
+- If `tee-001` exists: Skip both rows (not updated)
+- If `tee-002` doesn't exist: Create product with 1 variant
+
+### CREATE_AND_ENRICH mode
+
+**Use when:** You're updating existing products with new data (e.g., adding sustainability info).
+
+**Behavior:**
+- Products with new handles are created
+- Products with existing handles are **updated/enriched**
+- Variants are matched by UPID
+  - Existing variants (matched by UPID) are enriched
+  - New variants (no UPID match) are created
+- Empty cells in Excel preserve existing Avelero values
+- Non-empty cells in Excel **overwrite** existing values
+
+**Example enrichment:**
+
+**Existing in Avelero:**
+```json
+{
+  "productHandle": "tee-001",
+  "name": "Basic Tee",
+  "description": "A classic tee",
+  "carbonKg": null,
+  "variants": [
+    { "upid": "UPID-001", "sku": "SKU-001", "materials": [] }
+  ]
+}
+```
+
+**Excel import (CREATE_AND_ENRICH):**
+
+| Product Handle | Product Name | Description | Carbon Footprint (kg) | UPID | Materials |
+|----------------|--------------|-------------|----------------------|------|------------|
+| tee-001 | | | 5.2 | UPID-001 | Organic Cotton 95%, Elastane 5% |
+
+**Result after import:**
+```json
+{
+  "productHandle": "tee-001",
+  "name": "Basic Tee",           // Preserved (empty in Excel)
+  "description": "A classic tee", // Preserved (empty in Excel)
+  "carbonKg": 5.2,                // Enriched (was null)
+  "variants": [
+    {
+      "upid": "UPID-001",
+      "sku": "SKU-001",           // Preserved
+      "materials": [              // Enriched (was empty)
+        { "name": "Organic Cotton", "percentage": 95 },
+        { "name": "Elastane", "percentage": 5 }
+      ]
+    }
+  ]
+}
+```
+
+<Warning>
+CREATE_AND_ENRICH mode **overwrites** non-empty cells. If Excel has a value, it replaces the Avelero value. Use empty cells to preserve existing data.
+</Warning>
+
+## Excel format requirements
+
+### Row grouping (Shopify-style)
+
+Products with multiple variants use **row grouping**:
+
+- **First row**: Contains product-level data + first variant
+- **Subsequent rows**: Only variant data (product columns can be empty)
+
+**Example:**
+
+| Product Handle | Product Name | Description | UPID | SKU | Attribute: Size |
+|----------------|--------------|-------------|------|-----|-----------------|
+| dress-001 | Summer Dress | Light and airy | UPID-1 | SKU-1 | Small |
+| | | | UPID-2 | SKU-2 | Medium |
+| | | | UPID-3 | SKU-3 | Large |
+| tee-001 | Basic Tee | Classic fit | UPID-4 | SKU-4 | One Size |
+
+**Parsing logic:**
+- Row 1: Product `dress-001` with variant (Size: Small)
+- Row 2: Additional variant for `dress-001` (Size: Medium)
+- Row 3: Additional variant for `dress-001` (Size: Large)
+- Row 4: New product `tee-001` with variant (Size: One Size)
+
+### Column header patterns
+
+**Product-level fields:**
+- Exact match: `Product Handle`, `Product Name`, `Description`
+- Case-insensitive
+
+**Attribute columns:**
+- Pattern: `Attribute: {name}` or `Attr: {name}`
+- Example: `Attribute: Size`, `Attr: Color`
+- Sorted alphabetically to determine variant title
+
+**Material columns:**
+- Pattern: `Materials` or `Material Composition`
+- Format: `Material1 X%, Material2 Y%`
+
+**Journey columns:**
+- Pattern: `Journey: {step}` or `Supply Chain: {step}`
+- Example: `Journey: Raw Materials`, `Supply Chain: Manufacturing`
+
+### Special values
+
+**Status enum:**
+- Valid values: `published`, `unpublished`, `archived`, `draft`
+- Case-insensitive
+- Default: `unpublished`
+
+**Carbon status enum:**
+- Valid values: `calculated`, `estimated`, `certified`
+- Case-insensitive
+
+**Boolean values:**
+- True: `true`, `yes`, `1`, `TRUE`, `YES`
+- False: `false`, `no`, `0`, `FALSE`, `NO`
+
+## Validation rules
+
+### Product validation
+
+<CodeGroup>
+```typescript Product handle
+// Must be unique and URL-safe
+const handleRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+if (!handleRegex.test(productHandle)) {
+  error = 'Product handle must be lowercase alphanumeric with hyphens';
+}
+```
+
+```typescript Category path
+// Must use forward slashes for hierarchy
+const categoryRegex = /^[^/]+(?:\/[^/]+)*$/;
+
+if (!categoryRegex.test(categoryPath)) {
+  error = 'Category must use forward slashes (e.g., Apparel/Tops)';
+}
+```
+</CodeGroup>
+
+### Variant validation
+
+<CodeGroup>
+```typescript SKU format
+// Alphanumeric with dashes and underscores
+const skuRegex = /^[A-Z0-9-_]+$/i;
+
+if (!skuRegex.test(sku)) {
+  error = 'SKU must be alphanumeric with dashes/underscores';
+}
+```
+
+```typescript Barcode format
+// Standard barcode formats
+const barcodeRegex = /^[0-9]{8,14}$/;
+
+if (!barcodeRegex.test(barcode)) {
+  error = 'Barcode must be 8-14 digits';
+}
+```
+</CodeGroup>
+
+### Material validation
+
+```typescript Material percentage
+const materials = parseMaterials('Organic Cotton 95%, Elastane 5%');
+
+const totalPercentage = materials.reduce((sum, m) => sum + (m.percentage || 0), 0);
+
+if (totalPercentage > 0 && totalPercentage !== 100) {
+  error = 'Material percentages must sum to 100%';
+}
+```
+
+## Export workflow
+
+### Export all products
+
+<Steps>
+  <Step title="Navigate to Products">
+    Go to **Products** in your Avelero dashboard.
+  </Step>
+  
+  <Step title="Start export">
+    Click **Export** in the top right corner.
+  </Step>
+  
+  <Step title="Select products">
+    Choose export scope:
+    - **All products**: Export entire catalog
+    - **Selected products**: Export only selected rows
+  </Step>
+  
+  <Step title="Monitor progress">
+    Export runs in background. You'll receive an email when complete.
+  </Step>
+  
+  <Step title="Download file">
+    Click **Download** in the export status modal or from the email link.
+  </Step>
+</Steps>
+
+### Export filters
+
+Exports preserve your current filter state:
+
+- **Search query**: Only export products matching search
+- **Status filter**: Only published/unpublished/archived products
+- **Category filter**: Only products in selected categories
+- **Tag filter**: Only products with specific tags
+
+**Example:**
+
+1. Filter products by category "Apparel"
+2. Search for "cotton"
+3. Click **Export** → **All products**
+4. Result: Excel file contains only apparel products with "cotton" in name/description
+
+### Export format
+
+Exports use the same Excel format as imports:
+
+- One row per variant
+- Product-level data repeated for first variant, empty for subsequent variants
+- All columns from import template included
+- Ready to re-import after editing
+
+**Example export:**
+
+| Product Handle | Product Name | UPID | SKU | Attribute: Size | Materials | Carbon Footprint (kg) |
+|----------------|--------------|------|-----|-----------------|-----------|-----------------------|
+| tee-001 | Basic Tee | UPID-001 | SKU-001 | Small | Organic Cotton 95%, Elastane 5% | 5.2 |
+| | | UPID-002 | SKU-002 | Medium | | |
+| | | UPID-003 | SKU-003 | Large | | |
+
+**Note:** Empty cells in subsequent variant rows inherit product-level values when re-imported.
+
+## Field mapping
+
+### Column name variations
+
+Avelero accepts multiple column name formats for flexibility:
+
+| Standard | Accepted variations |
+|----------|---------------------|
+| Product Handle | `handle`, `product_handle`, `Handle` |
+| Product Name | `name`, `title`, `product_name`, `Product Name` |
+| Description | `desc`, `description`, `product_description` |
+| SKU | `sku`, `SKU`, `variant_sku` |
+| Barcode | `barcode`, `gtin`, `upc`, `ean` |
+| Materials | `materials`, `material_composition`, `composition` |
+
+### Custom attribute mapping
+
+Attribute columns are created dynamically:
+
+```typescript Attribute detection
+const attributeRegex = /^(?:Attribute|Attr):\s*(.+)$/i;
+
+for (const header of headers) {
+  const match = header.match(attributeRegex);
+  if (match) {
+    const attributeName = match[1].trim();
+    // Create or link to existing attribute
+  }
+}
+```
+
+**Attribute value handling:**
+- Values are created if they don't exist in the catalog
+- Case-sensitive matching
+- Whitespace trimmed
+
+## API integration
+
+Bulk operations are available via tRPC API:
+
+<CodeGroup>
+```typescript Start import
+import { trpc } from '@/lib/trpc';
+
+const result = await trpc.bulk.import.start.mutate({
+  fileId: 'brand-id/timestamp-filename.xlsx',
+  filename: 'products.xlsx',
+  mode: 'CREATE_AND_ENRICH'
+});
+
+console.log(result.jobId); // Use to poll status
+```
+
+```typescript Check import status
+const status = await trpc.bulk.import.status.query({
+  jobId: result.jobId
+});
+
+console.log(status.progress);
+// {
+//   phase: 'validation',
+//   total: 100,
+//   processed: 50,
+//   created: 0,
+//   updated: 0,
+//   failed: 5,
+//   percentage: 50
+// }
+```
+
+```typescript Start export
+const exportJob = await trpc.bulk.export.start.mutate({
+  selection: {
+    mode: 'all',
+    excludeIds: [] // or { mode: 'explicit', includeIds: [...] }
+  },
+  filterState: currentFilters,
+  search: searchQuery
+});
+
+console.log(exportJob.jobId);
+```
+
+```typescript Check export status
+const exportStatus = await trpc.bulk.export.status.query({
+  jobId: exportJob.jobId
+});
+
+if (exportStatus.status === 'COMPLETED') {
+  console.log('Download URL:', exportStatus.downloadUrl);
+  console.log('Expires at:', exportStatus.expiresAt);
+}
+```
+</CodeGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Import fails with 'Invalid Excel format' error">
+    **Cause:** File is not a valid Excel file or is corrupted.
+    
+    **Solution:**
+    1. Verify file extension is `.xlsx` or `.xls`
+    2. Open file in Excel and save as new file
+    3. Download fresh template from Avelero
+    4. Copy data to new template
+  </Accordion>
+
+  <Accordion title="Products are created but variants are missing">
+    **Cause:** Variant data is in separate rows but not grouped correctly.
+    
+    **Solution:**
+    - Ensure all variant rows for a product are consecutive
+    - Product handle must be empty or matching for variant rows
+    - Check that variant columns (UPID, SKU) have unique values
+  </Accordion>
+
+  <Accordion title="Materials aren't parsing correctly">
+    **Cause:** Material format doesn't match expected pattern.
+    
+    **Solution:**
+    - Use format: `Material1 X%, Material2 Y%`
+    - Percentages are optional but must sum to 100% if provided
+    - Separate materials with commas
+    - Example: `Organic Cotton 95%, Elastane 5%`
+  </Accordion>
+
+  <Accordion title="Attributes aren't creating variants correctly">
+    **Cause:** Attribute columns aren't formatted with correct prefix.
+    
+    **Solution:**
+    - Column name must start with `Attribute:` or `Attr:`
+    - Example: `Attribute: Size`, `Attr: Color`
+    - Values in these columns become variant attributes
+    - Variant title is built from attribute values sorted by column name
+  </Accordion>
+
+  <Accordion title="Export download link expires">
+    **Cause:** Export files are temporary and expire after 7 days.
+    
+    **Solution:**
+    - Download exported files within 7 days
+    - Re-run export if link expired
+    - Consider automating exports via API for regular backups
+  </Accordion>
+
+  <Accordion title="ENRICH mode is overwriting data I want to keep">
+    **Cause:** Non-empty cells in Excel overwrite existing Avelero values.
+    
+    **Solution:**
+    - Export current data first
+    - Only fill cells you want to update
+    - Leave cells empty to preserve existing values
+    - Use CREATE mode if you want to skip existing products entirely
+  </Accordion>
+</AccordionGroup>
+
+## Best practices
+
+<AccordionGroup>
+  <Accordion title="Validate data before import">
+    1. Start with a small test import (5-10 products)
+    2. Verify products appear correctly in Avelero
+    3. Check Digital Passports render properly
+    4. Then import full catalog
+  </Accordion>
+
+  <Accordion title="Use UPID for variant matching">
+    - Assign unique UPIDs to all variants
+    - Use UPIDs consistently across imports
+    - Enables reliable enrichment with CREATE_AND_ENRICH mode
+    - Prevents duplicate variants
+  </Accordion>
+
+  <Accordion title="Export before major changes">
+    - Export full catalog before bulk updates
+    - Provides backup in case of errors
+    - Enables easy rollback by re-importing
+    - Version control your Excel files
+  </Accordion>
+
+  <Accordion title="Separate structure from enrichment">
+    1. **First import (CREATE mode)**: Set up product structure (handles, names, variants)
+    2. **Second import (ENRICH mode)**: Add sustainability data, supply chain, materials
+    3. **Ongoing enrichment**: Use ENRICH mode for updates without changing structure
+  </Accordion>
+</AccordionGroup>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Shopify integration" icon="shopify" href="/integrations/shopify">
+    Automate product imports from Shopify instead of manual Excel uploads.
+  </Card>
+  
+  <Card title="Product catalog" icon="box" href="/features/product-catalog">
+    Learn how products and variants are structured in Avelero.
+  </Card>
+</CardGroup>

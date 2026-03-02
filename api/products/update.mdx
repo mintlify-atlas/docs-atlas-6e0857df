@@ -1,0 +1,348 @@
+---
+title: Update products
+description: Update single products or perform bulk updates across multiple products
+---
+
+Update existing products in your catalog. This endpoint supports both single product updates and bulk operations.
+
+## Endpoint
+
+```typescript
+trpc.products.update.mutate(input)
+```
+
+**Router location**: `apps/api/src/trpc/routers/products/index.ts:373`
+
+## Operation modes
+
+The update endpoint supports two modes based on the input structure:
+
+1. **Single product update**: Provide `id` to update one product with full field access
+2. **Bulk update**: Provide `selection` to update multiple products with limited fields
+
+## Single product update
+
+### Request parameters
+
+<ParamField path="id" type="string" required>
+  UUID of the product to update
+</ParamField>
+
+<ParamField path="brand_id" type="string">
+  UUID of the brand (must match active brand if provided)
+</ParamField>
+
+<ParamField path="name" type="string">
+  Product name (1-100 characters)
+</ParamField>
+
+<ParamField path="product_handle" type="string">
+  URL-friendly identifier. Can be set to `null` to clear.
+  
+  **Format**: Lowercase letters, numbers, and dashes only
+</ParamField>
+
+<ParamField path="description" type="string | null">
+  Product description. Set to `null` to clear.
+</ParamField>
+
+<ParamField path="category_id" type="string | null">
+  Category UUID. Set to `null` to clear.
+</ParamField>
+
+<ParamField path="season_id" type="string | null">
+  Season UUID. Set to `null` to clear.
+</ParamField>
+
+<ParamField path="manufacturer_id" type="string | null">
+  Manufacturer UUID. Set to `null` to clear.
+</ParamField>
+
+<ParamField path="image_path" type="string | null">
+  Storage path for product image. Set to `null` to clear.
+</ParamField>
+
+<ParamField path="status" type="string | null">
+  Product status (`"draft"` or `"published"`). Set to `null` to clear.
+</ParamField>
+
+<ParamField path="tag_ids" type="string[]">
+  Array of tag UUIDs
+</ParamField>
+
+<ParamField path="materials" type="array">
+  Array of material compositions (same structure as create)
+</ParamField>
+
+<ParamField path="journey_steps" type="array">
+  Array of journey steps (same structure as create)
+</ParamField>
+
+<ParamField path="environment" type="object">
+  Environmental impact metrics (same structure as create)
+</ParamField>
+
+<ParamField path="weight" type="object">
+  Product weight (same structure as create)
+</ParamField>
+
+### Response
+
+<ResponseField name="data" type="object">
+  The updated product object with all fields
+</ResponseField>
+
+### Example
+
+```typescript
+const updated = await trpc.products.update.mutate({
+  id: "550e8400-e29b-41d4-a716-446655440000",
+  name: "Updated Product Name",
+  description: "New description",
+  status: "published"
+});
+
+console.log(updated.data.name); // "Updated Product Name"
+```
+
+## Bulk update
+
+Update multiple products at once. Only specific fields are available for bulk updates.
+
+### Request parameters
+
+<ParamField path="selection" type="object" required>
+  Defines which products to update
+  
+  <Expandable title="Selection modes">
+    **Explicit mode** - Update specific products by ID:
+    
+    ```typescript
+    {
+      mode: "explicit",
+      ids: ["uuid-1", "uuid-2", "uuid-3"]
+    }
+    ```
+    
+    **All mode** - Update all products matching filters:
+    
+    ```typescript
+    {
+      mode: "all",
+      filters: { /* FilterState structure */ },
+      search: "cotton",
+      excludeIds: ["uuid-to-skip"]
+    }
+    ```
+  </Expandable>
+</ParamField>
+
+<ParamField path="brand_id" type="string">
+  Brand UUID (must match active brand if provided)
+</ParamField>
+
+#### Available bulk update fields
+
+<ParamField path="status" type="string">
+  Product status to apply to all selected products
+</ParamField>
+
+<ParamField path="category_id" type="string | null">
+  Category UUID to apply. Set to `null` to clear category for all selected products.
+</ParamField>
+
+<ParamField path="season_id" type="string | null">
+  Season UUID to apply. Set to `null` to clear season for all selected products.
+</ParamField>
+
+<Note>
+  Bulk updates only support `status`, `category_id`, and `season_id`. For updating other fields, use single product updates.
+</Note>
+
+### Response
+
+<ResponseField name="success" type="boolean">
+  Always `true` on success
+</ResponseField>
+
+<ResponseField name="updated" type="number">
+  Number of products updated
+</ResponseField>
+
+### Examples
+
+#### Update specific products
+
+```typescript
+const result = await trpc.products.update.mutate({
+  selection: {
+    mode: "explicit",
+    ids: [
+      "uuid-1",
+      "uuid-2",
+      "uuid-3"
+    ]
+  },
+  status: "published",
+  category_id: "new-category-uuid"
+});
+
+console.log(result.updated); // 3
+```
+
+#### Update all products matching filter
+
+```typescript
+const result = await trpc.products.update.mutate({
+  selection: {
+    mode: "all",
+    filters: {
+      groups: [
+        {
+          id: "group-1",
+          conditions: [
+            {
+              id: "cond-1",
+              fieldId: "status",
+              operator: "equals",
+              value: "draft"
+            }
+          ]
+        }
+      ]
+    },
+    excludeIds: ["uuid-to-keep-draft"]
+  },
+  status: "published"
+});
+
+console.log(result.updated); // Number of products changed from draft to published
+```
+
+#### Update with search
+
+```typescript
+const result = await trpc.products.update.mutate({
+  selection: {
+    mode: "all",
+    search: "2024 collection"
+  },
+  season_id: "spring-2024-uuid"
+});
+```
+
+## Update with materials and environment
+
+```typescript
+const updated = await trpc.products.update.mutate({
+  id: "product-uuid",
+  materials: [
+    {
+      brand_material_id: "material-1",
+      percentage: 70
+    },
+    {
+      brand_material_id: "material-2",
+      percentage: 30
+    }
+  ],
+  environment: {
+    carbon_kg_co2e: "10.2",
+    water_liters: "2800"
+  }
+});
+```
+
+## Clear nullable fields
+
+Set fields to `null` to clear their values:
+
+```typescript
+const updated = await trpc.products.update.mutate({
+  id: "product-uuid",
+  description: null,
+  category_id: null,
+  manufacturer_id: null
+});
+```
+
+## Publishing behavior
+
+<Warning>
+  When setting `status` to `"published"`, the system automatically triggers the publish flow to create passport versions. This ensures QR codes become resolvable when the product is published.
+</Warning>
+
+For single product updates:
+
+```typescript
+const updated = await trpc.products.update.mutate({
+  id: "product-uuid",
+  status: "published"
+});
+// Automatically calls publishProduct() in the background
+```
+
+For bulk updates:
+
+```typescript
+const result = await trpc.products.update.mutate({
+  selection: { mode: "explicit", ids: ["uuid-1", "uuid-2"] },
+  status: "published"
+});
+// Automatically calls bulkPublishProducts() in the background
+```
+
+## Cache revalidation
+
+For single product updates, the DPP cache is automatically revalidated:
+
+```typescript
+// After update, the DPP page for this product is revalidated
+await trpc.products.update.mutate({
+  id: "product-uuid",
+  name: "Updated Name"
+});
+// DPP cache cleared for /[brandSlug]/[productHandle]/
+```
+
+## Error codes
+
+<ResponseField name="BAD_REQUEST" type="error">
+  Invalid input or validation error
+  
+  **Common causes**:
+  - Product not found for active brand
+  - Active brand does not match provided `brand_id`
+  - Invalid product handle format
+  - Product handle already exists for another product
+  - Invalid UUID format
+  - Empty `ids` array in explicit mode
+</ResponseField>
+
+<ResponseField name="INTERNAL_SERVER_ERROR" type="error">
+  Unexpected error during update
+  
+  **Message**: `"Failed to update product"`
+</ResponseField>
+
+## Validation rules
+
+### Single update
+
+- Only fields explicitly provided in the input are updated
+- Nullable fields can be set to `null` to clear them
+- All validation rules from create apply (product handle format, string lengths, etc.)
+
+### Bulk update
+
+- At least one product ID required in explicit mode
+- Only `status`, `category_id`, and `season_id` can be bulk updated
+- Filters and search use the same `FilterState` structure as list queries
+
+## Source code reference
+
+- **Schema definition**: `apps/api/src/schemas/products.ts:355` (`unifiedUpdateSchema`)
+- **Implementation**: `apps/api/src/trpc/routers/products/index.ts:373`
+- **Database queries**: 
+  - Single: `@v1/db/queries/products` (`updateProduct`)
+  - Bulk: `bulkUpdateProductsByIds`, `bulkUpdateProductsByFilter`

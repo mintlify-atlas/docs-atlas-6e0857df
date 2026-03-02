@@ -1,0 +1,557 @@
+---
+title: Certifications API
+description: Manage brand certifications with issuing institute details, validity periods, and file attachments
+---
+
+Certifications represent third-party validations and standards that apply to your materials and products. Track certification details, issuing institutes, validity periods, and attach certification documents.
+
+## List certifications
+
+Retrieve all certifications for your brand with usage metrics.
+
+```typescript
+const result = await trpc.catalog.certifications.list.query();
+```
+
+### Response
+
+Returns an array of certifications with material usage counts:
+
+<ResponseField name="data" type="array" required>
+  Array of certification objects
+  
+  <ResponseField name="id" type="string" required>
+    Unique identifier (UUID)
+  </ResponseField>
+  
+  <ResponseField name="title" type="string" required>
+    Certification title (e.g., "GOTS", "OEKO-TEX Standard 100", "Fair Trade")
+  </ResponseField>
+  
+  <ResponseField name="certification_code" type="string | null">
+    Certification number or code (e.g., "GOTS-2024-001")
+  </ResponseField>
+  
+  <ResponseField name="institute_name" type="string | null">
+    Name of the certifying institute (e.g., "Control Union", "OEKO-TEX")
+  </ResponseField>
+  
+  <ResponseField name="institute_email" type="string | null">
+    Contact email for the institute
+  </ResponseField>
+  
+  <ResponseField name="institute_website" type="string | null">
+    Institute website URL
+  </ResponseField>
+  
+  <ResponseField name="institute_address_line_1" type="string | null">
+    Institute address line 1 (max 500 characters)
+  </ResponseField>
+  
+  <ResponseField name="institute_address_line_2" type="string | null">
+    Institute address line 2 (max 500 characters)
+  </ResponseField>
+  
+  <ResponseField name="institute_city" type="string | null">
+    Institute city (max 100 characters)
+  </ResponseField>
+  
+  <ResponseField name="institute_state" type="string | null">
+    Institute state/province (max 100 characters)
+  </ResponseField>
+  
+  <ResponseField name="institute_zip" type="string | null">
+    Institute postal/ZIP code (max 100 characters)
+  </ResponseField>
+  
+  <ResponseField name="institute_country_code" type="string | null">
+    ISO 3166-1 alpha-2 country code (e.g., "US", "GB", "DE")
+  </ResponseField>
+  
+  <ResponseField name="issue_date" type="string | null">
+    ISO 8601 datetime when certification was issued
+  </ResponseField>
+  
+  <ResponseField name="expiry_date" type="string | null">
+    ISO 8601 datetime when certification expires
+  </ResponseField>
+  
+  <ResponseField name="certification_path" type="string | null">
+    File path or URL to the certification document (max 500 characters)
+  </ResponseField>
+  
+  <ResponseField name="materials_count" type="number" required>
+    Number of materials linked to this certification
+  </ResponseField>
+  
+  <ResponseField name="created_at" type="string" required>
+    ISO 8601 timestamp
+  </ResponseField>
+  
+  <ResponseField name="updated_at" type="string" required>
+    ISO 8601 timestamp
+  </ResponseField>
+</ResponseField>
+
+<Note>
+  The `materials_count` metric shows how many materials reference this certification.
+</Note>
+
+## Create certification
+
+Create a new certification entry.
+
+```typescript
+const result = await trpc.catalog.certifications.create.mutate({
+  title: "GOTS (Global Organic Textile Standard)",
+  certification_code: "GOTS-2024-001",
+  institute_name: "Control Union",
+  institute_email: "info@controlunion.com",
+  institute_website: "https://www.controlunion.com",
+  institute_country_code: "NL",
+  issue_date: "2024-01-15T00:00:00Z",
+  expiry_date: "2025-01-15T00:00:00Z",
+  certification_path: "https://storage.example.com/certs/gots-2024.pdf"
+});
+```
+
+### Request
+
+<ParamField path="title" type="string" required>
+  Certification title (1-100 characters)
+  
+  Examples: "GOTS", "OEKO-TEX Standard 100", "Fair Trade Certified", "Bluesign"
+</ParamField>
+
+<ParamField path="certification_code" type="string">
+  Certification number or reference code (1-100 characters)
+  
+  Examples: "GOTS-2024-001", "CU-875432", "FT-2024-12345"
+</ParamField>
+
+<ParamField path="institute_name" type="string">
+  Name of the certifying organization (1-100 characters)
+  
+  Examples: "Control Union", "OEKO-TEX Association", "Fair Trade USA"
+</ParamField>
+
+<ParamField path="institute_email" type="string">
+  Contact email for the institute
+  
+  Must be a valid email address format.
+</ParamField>
+
+<ParamField path="institute_website" type="string">
+  Institute website URL
+  
+  Must be a valid URL format (e.g., `https://example.com`).
+</ParamField>
+
+<ParamField path="institute_address_line_1" type="string">
+  First line of institute address (1-500 characters)
+</ParamField>
+
+<ParamField path="institute_address_line_2" type="string">
+  Second line of institute address (1-500 characters)
+</ParamField>
+
+<ParamField path="institute_city" type="string">
+  Institute city (1-100 characters)
+</ParamField>
+
+<ParamField path="institute_state" type="string">
+  Institute state or province (1-100 characters)
+</ParamField>
+
+<ParamField path="institute_zip" type="string">
+  Postal or ZIP code (1-100 characters)
+</ParamField>
+
+<ParamField path="institute_country_code" type="string">
+  ISO 3166-1 alpha-2 country code (2 uppercase letters)
+  
+  Examples: `"US"`, `"GB"`, `"DE"`, `"NL"`, `"CH"`
+</ParamField>
+
+<ParamField path="issue_date" type="string">
+  ISO 8601 datetime when certification was issued
+  
+  Example: `"2024-01-15T00:00:00Z"`
+</ParamField>
+
+<ParamField path="expiry_date" type="string">
+  ISO 8601 datetime when certification expires
+  
+  Example: `"2025-01-15T00:00:00Z"`
+</ParamField>
+
+<ParamField path="certification_path" type="string">
+  File path or URL to the certification document (1-500 characters)
+  
+  Can be a file storage URL or internal path reference.
+</ParamField>
+
+### Response
+
+<ResponseField name="data" type="object" required>
+  <ResponseField name="id" type="string" required>
+    ID of the created certification
+  </ResponseField>
+</ResponseField>
+
+### Validation rules
+
+- `title` is required and must be 1-100 characters
+- All optional string fields have max lengths (see parameter descriptions)
+- `institute_email` must be a valid email format
+- `institute_website` must be a valid URL format
+- `institute_country_code` is automatically converted to uppercase and must be exactly 2 characters
+- `issue_date` and `expiry_date` must be valid ISO 8601 datetime strings
+
+### Error handling
+
+<CodeGroup>
+```json Invalid Email
+{
+  "code": "BAD_REQUEST",
+  "message": "Invalid email format"
+}
+```
+
+```json Invalid URL
+{
+  "code": "BAD_REQUEST",
+  "message": "Invalid URL format"
+}
+```
+
+```json Invalid Date
+{
+  "code": "BAD_REQUEST",
+  "message": "Invalid datetime format"
+}
+```
+</CodeGroup>
+
+## Update certification
+
+Update an existing certification.
+
+```typescript
+const result = await trpc.catalog.certifications.update.mutate({
+  id: "550e8400-e29b-41d4-a716-446655440000",
+  expiry_date: "2026-01-15T00:00:00Z",
+  certification_path: "https://storage.example.com/certs/gots-2024-updated.pdf"
+});
+```
+
+### Request
+
+<ParamField path="id" type="string" required>
+  Certification ID (UUID)
+</ParamField>
+
+<ParamField path="title" type="string">
+  New certification title (1-100 characters)
+</ParamField>
+
+<ParamField path="certification_code" type="string | null">
+  Update or clear certification code
+</ParamField>
+
+<ParamField path="institute_name" type="string | null">
+  Update or clear institute name
+</ParamField>
+
+<ParamField path="institute_email" type="string | null">
+  Update or clear institute email
+</ParamField>
+
+<ParamField path="institute_website" type="string | null">
+  Update or clear institute website
+</ParamField>
+
+<ParamField path="institute_address_line_1" type="string | null">
+  Update or clear address line 1
+</ParamField>
+
+<ParamField path="institute_address_line_2" type="string | null">
+  Update or clear address line 2
+</ParamField>
+
+<ParamField path="institute_city" type="string | null">
+  Update or clear city
+</ParamField>
+
+<ParamField path="institute_state" type="string | null">
+  Update or clear state
+</ParamField>
+
+<ParamField path="institute_zip" type="string | null">
+  Update or clear ZIP code
+</ParamField>
+
+<ParamField path="institute_country_code" type="string | null">
+  Update or clear country code
+</ParamField>
+
+<ParamField path="issue_date" type="string | null">
+  Update or clear issue date
+</ParamField>
+
+<ParamField path="expiry_date" type="string | null">
+  Update or clear expiry date
+</ParamField>
+
+<ParamField path="certification_path" type="string | null">
+  Update or clear certification document path
+</ParamField>
+
+### Response
+
+<ResponseField name="data" type="object" required>
+  <ResponseField name="id" type="string" required>
+    ID of the updated certification
+  </ResponseField>
+</ResponseField>
+
+<Note>
+  Only provided fields are updated. Omitted fields remain unchanged. To explicitly clear a nullable field, pass `null`.
+</Note>
+
+### Error handling
+
+<CodeGroup>
+```json Not Found
+{
+  "code": "NOT_FOUND",
+  "message": "certification with ID '...' not found"
+}
+```
+
+```json Invalid Email
+{
+  "code": "BAD_REQUEST",
+  "message": "Invalid email format"
+}
+```
+</CodeGroup>
+
+## Delete certification
+
+Delete a certification from your catalog.
+
+```typescript
+const result = await trpc.catalog.certifications.delete.mutate({
+  id: "550e8400-e29b-41d4-a716-446655440000"
+});
+```
+
+### Request
+
+<ParamField path="id" type="string" required>
+  Certification ID (UUID)
+</ParamField>
+
+### Response
+
+<ResponseField name="data" type="object" required>
+  <ResponseField name="id" type="string" required>
+    ID of the deleted certification
+  </ResponseField>
+</ResponseField>
+
+<Warning>
+  Deleting a certification does not check for material references. Materials referencing this certification will have their `certification_id` set to null via cascade.
+</Warning>
+
+### Error handling
+
+<CodeGroup>
+```json Not Found
+{
+  "code": "NOT_FOUND",
+  "message": "certification with ID '...' not found"
+}
+```
+</CodeGroup>
+
+## TypeScript types
+
+All procedures are fully typed when using the tRPC client:
+
+```typescript
+import type { AppRouter } from "@v1/api";
+import { createTRPCClient } from "@trpc/client";
+
+const trpc = createTRPCClient<AppRouter>({
+  // ... config
+});
+
+// Fully typed request and response
+const result = await trpc.catalog.certifications.create.mutate({
+  title: "GOTS",
+  certification_code: "GOTS-2024-001",
+  issue_date: "2024-01-15T00:00:00Z",
+  expiry_date: "2025-01-15T00:00:00Z"
+});
+// result.data.id is typed as string
+
+// Type inference for list results
+const list = await trpc.catalog.certifications.list.query();
+// list.data is typed as Certification[]
+for (const cert of list.data) {
+  console.log(cert.title); // typed as string
+  console.log(cert.expiry_date); // typed as string | null
+  console.log(cert.materials_count); // typed as number
+}
+```
+
+### Schema types
+
+```typescript
+// Request schemas
+type CreateCertificationSchema = {
+  title: string; // 1-100 chars, required
+  certification_code?: string; // 1-100 chars
+  institute_name?: string; // 1-100 chars
+  institute_email?: string; // valid email
+  institute_website?: string; // valid URL
+  institute_address_line_1?: string; // 1-500 chars
+  institute_address_line_2?: string; // 1-500 chars
+  institute_city?: string; // 1-100 chars
+  institute_state?: string; // 1-100 chars
+  institute_zip?: string; // 1-100 chars
+  institute_country_code?: string; // 2-char uppercase
+  issue_date?: string; // ISO 8601 datetime
+  expiry_date?: string; // ISO 8601 datetime
+  certification_path?: string; // 1-500 chars
+};
+
+type UpdateCertificationSchema = {
+  id: string; // UUID, required
+  title?: string;
+  certification_code?: string | null;
+  institute_name?: string | null;
+  institute_email?: string | null;
+  institute_website?: string | null;
+  institute_address_line_1?: string | null;
+  institute_address_line_2?: string | null;
+  institute_city?: string | null;
+  institute_state?: string | null;
+  institute_zip?: string | null;
+  institute_country_code?: string | null;
+  issue_date?: string | null;
+  expiry_date?: string | null;
+  certification_path?: string | null;
+};
+
+type DeleteCertificationSchema = {
+  id: string; // UUID
+};
+
+// Response types
+type Certification = {
+  id: string;
+  title: string;
+  certification_code: string | null;
+  institute_name: string | null;
+  institute_email: string | null;
+  institute_website: string | null;
+  institute_address_line_1: string | null;
+  institute_address_line_2: string | null;
+  institute_city: string | null;
+  institute_state: string | null;
+  institute_zip: string | null;
+  institute_country_code: string | null;
+  issue_date: string | null; // ISO 8601
+  expiry_date: string | null; // ISO 8601
+  certification_path: string | null;
+  created_at: string; // ISO 8601
+  updated_at: string; // ISO 8601
+};
+
+type CertificationWithMetrics = Certification & {
+  materials_count: number;
+};
+```
+
+## Common patterns
+
+### Creating a complete certification
+
+```typescript
+const certification = await trpc.catalog.certifications.create.mutate({
+  title: "GOTS (Global Organic Textile Standard)",
+  certification_code: "GOTS-2024-001",
+  institute_name: "Control Union",
+  institute_email: "info@controlunion.com",
+  institute_website: "https://www.controlunion.com",
+  institute_address_line_1: "P.O. Box 22074",
+  institute_city: "Amsterdam",
+  institute_zip: "1100 CB",
+  institute_country_code: "NL",
+  issue_date: "2024-01-15T00:00:00Z",
+  expiry_date: "2025-01-15T00:00:00Z",
+  certification_path: "https://storage.example.com/certs/gots-2024.pdf"
+});
+```
+
+### Checking expiry dates
+
+```typescript
+const certs = await trpc.catalog.certifications.list.query();
+
+const now = new Date();
+const expiringWithin90Days = certs.data.filter(cert => {
+  if (!cert.expiry_date) return false;
+  const expiry = new Date(cert.expiry_date);
+  const daysUntilExpiry = (expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
+  return daysUntilExpiry > 0 && daysUntilExpiry <= 90;
+});
+
+console.log(`${expiringWithin90Days.length} certifications expiring soon`);
+```
+
+### Finding unused certifications
+
+```typescript
+const certs = await trpc.catalog.certifications.list.query();
+
+// Find certifications not linked to any materials
+const unused = certs.data.filter(cert => cert.materials_count === 0);
+
+// Safe to delete if no longer needed
+for (const cert of unused) {
+  await trpc.catalog.certifications.delete.mutate({ id: cert.id });
+}
+```
+
+### Updating expiry dates
+
+```typescript
+// Extend certification validity
+await trpc.catalog.certifications.update.mutate({
+  id: certificationId,
+  expiry_date: "2027-01-15T00:00:00Z"
+});
+```
+
+### Linking to materials
+
+```typescript
+// Create certification first
+const cert = await trpc.catalog.certifications.create.mutate({
+  title: "OEKO-TEX Standard 100",
+  certification_code: "21.HUS.68339",
+  issue_date: "2024-01-01T00:00:00Z",
+  expiry_date: "2025-01-01T00:00:00Z"
+});
+
+// Link to material
+await trpc.catalog.materials.create.mutate({
+  name: "OEKO-TEX Certified Cotton",
+  certification_id: cert.data.id,
+  recyclable: true
+});
+```

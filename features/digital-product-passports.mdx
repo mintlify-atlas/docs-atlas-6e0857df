@@ -1,0 +1,228 @@
+---
+title: Digital product passports
+description: Create compliant digital product passports with unique QR codes that meet EU ESPR requirements and provide customers with complete product transparency.
+---
+
+Digital Product Passports (DPPs) are the core of Avelero's platform. Each passport contains comprehensive product information including materials, environmental impact, and supply chain traceability, accessible via a unique QR code or URL.
+
+## What is a digital product passport?
+
+A Digital Product Passport is a permanent digital record that contains all relevant information about a product throughout its lifecycle. In Avelero, each passport:
+
+- Gets a unique Universal Product Identifier (UPID) that never changes
+- Lives at a permanent URL like `passport.avelero.com/{upid}`
+- Contains EU ESPR-compliant structured data in JSON-LD format
+- Remains accessible even if the product is discontinued
+- Can be customized with your brand's visual identity
+
+<Note>
+  The UPID is a 16-24 character alphanumeric identifier that serves as the sole identifier in public URLs. Once assigned, it persists indefinitely to ensure QR codes remain resolvable.
+</Note>
+
+## Creating passports
+
+You can create passports in multiple ways:
+
+### Manual creation
+
+<Steps>
+  <Step title="Create a product">
+    Navigate to the products catalog and add a new product with basic information like name, description, and category.
+  </Step>
+  
+  <Step title="Add product variants">
+    Define variants with specific attributes like size, color, SKU, and barcode. Each variant can have its own passport.
+  </Step>
+  
+  <Step title="Complete passport data">
+    Fill in materials, environmental metrics, and supply chain information for regulatory compliance.
+  </Step>
+  
+  <Step title="Publish the passport">
+    Publishing generates the UPID and creates an immutable snapshot of the current data. The passport becomes publicly accessible.
+  </Step>
+</Steps>
+
+### Bulk import
+
+Import multiple products and variants at once using Excel templates. The bulk import process:
+
+- Validates all data against your brand's catalog (materials, operators, manufacturers)
+- Maps columns to product attributes automatically
+- Handles relationships between products and variants
+- Provides detailed error reporting for any invalid data
+
+### Integration sync
+
+Connect external systems like Shopify to automatically sync products:
+
+- Products sync automatically when connected to an integration
+- Field mappings determine which external data populates which passport fields
+- Changes in the external system can trigger updates in Avelero
+- You maintain full control over what data is published
+
+## Passport lifecycle
+
+### Active passports
+
+When a passport is first published, it becomes active:
+
+- The UPID is generated and remains permanent
+- A version snapshot is created with all current product data
+- The passport URL becomes publicly accessible
+- QR codes can be generated for printing on product labels
+
+### Publishing updates
+
+You can continue editing product data after publishing:
+
+- Changes are saved to the working layer but don't affect the public passport immediately
+- When you publish again, a new version is created
+- The UPID stays the same, but the version number increments
+- The public URL shows the latest published version
+
+### Orphaned passports
+
+If you delete a product variant that has a published passport:
+
+- The passport becomes "orphaned" but remains accessible
+- The UPID and version history are preserved
+- QR codes continue to resolve to the last published version
+- SKU and barcode information is cleared from the passport record
+
+<Info>
+  This design ensures that printed QR codes never lead to broken links, even if you discontinue a product.
+</Info>
+
+## Passport content structure
+
+Each passport contains structured data organized into compliance sections:
+
+### Product identifiers
+
+- Universal Product Identifier (UPID)
+- SKU (Stock Keeping Unit)
+- Barcode/EAN/GTIN
+- Product name and description
+- Category classification
+
+### Product attributes
+
+- Physical specifications (weight, dimensions)
+- Variant attributes (size, color, style)
+- Manufacturer information
+- Season and collection association
+
+### Materials composition
+
+- Material breakdown with percentages
+- Recyclability information
+- Country of origin for each material
+- Certifications with testing institute details
+
+### Environmental impact
+
+- Carbon emissions (kg CO2e)
+- Water usage (liters)
+- Additional environmental metrics
+
+### Supply chain traceability
+
+- Manufacturing steps in sequence
+- Operator/facility information for each step
+- Geographic location data
+- Process step classifications
+
+## Publishing and versioning
+
+Passports use an immutable versioning system:
+
+<Accordion title="How versioning works">
+  When you publish a passport, Avelero creates a permanent snapshot:
+  
+  - All product data is serialized to JSON-LD format
+  - A content hash is generated for data integrity verification
+  - The version is timestamped and assigned a sequential version number
+  - The snapshot is stored independently of the working product data
+  
+  This separation ensures that published passports remain stable while you continue editing.
+</Accordion>
+
+<Accordion title="Version history">
+  Every time you publish changes, a new version is created:
+  
+  - Version 1: Initial publication
+  - Version 2: Updated materials information
+  - Version 3: Added supply chain operators
+  
+  The public URL always shows the latest version, but the system maintains the complete history.
+</Accordion>
+
+## Status management
+
+Products have three publication states:
+
+<CardGroup cols={3}>
+  <Card title="Unpublished" icon="file">
+    Draft state. Product exists in your catalog but has no public passport yet. Work in progress.
+  </Card>
+  
+  <Card title="Published" icon="globe">
+    Passport is live and publicly accessible. QR codes resolve to the passport page.
+  </Card>
+  
+  <Card title="Scheduled" icon="clock">
+    Visual indicator only. Product is still unpublished but marked for future publication.
+  </Card>
+</CardGroup>
+
+## QR code generation
+
+Once a passport is published, you can generate QR codes:
+
+- Bulk export QR codes for multiple variants at once
+- Choose from multiple image formats (PNG, SVG, PDF)
+- QR codes encode the full passport URL
+- Codes remain valid indefinitely due to permanent UPIDs
+
+<Info>
+  QR codes can be printed on hang tags, labels, packaging, or marketing materials to give customers instant access to product information.
+</Info>
+
+## Custom domains
+
+Brand owners can configure custom domains for passport URLs:
+
+- Use your own domain like `passport.yourbrand.com` instead of `passport.avelero.com`
+- DNS verification ensures you control the domain
+- One custom domain per brand
+- All passports automatically use the custom domain once verified
+
+<Steps>
+  <Step title="Add domain">
+    Enter your desired custom domain in brand settings.
+  </Step>
+  
+  <Step title="Add DNS record">
+    Add a TXT record to your DNS with the verification token provided.
+  </Step>
+  
+  <Step title="Verify">
+    Avelero checks DNS records and verifies domain ownership.
+  </Step>
+  
+  <Step title="Activate">
+    Once verified, all passport URLs automatically use your custom domain.
+  </Step>
+</Steps>
+
+## Compliance and standards
+
+Avelero's passport structure is designed for EU ESPR compliance:
+
+- JSON-LD format with standardized vocabularies
+- Schema alignment with ecodesign requirements
+- Structured data for regulatory submission
+- Complete audit trail via version history
+
+The passport data structure follows the EU Digital Product Passport framework, ensuring that when regulations require submission to public registries, your data is already in the correct format.

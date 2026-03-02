@@ -1,0 +1,406 @@
+---
+title: Configuring your brand
+description: Set up your brand identity, upload your logo, configure custom domains, and customize how your Digital Product Passports appear to customers.
+---
+
+Your brand settings control how your Digital Product Passports appear to customers and how your organization operates within Avelero. This guide covers all the brand configuration options available.
+
+## Accessing brand settings
+
+To access your brand settings:
+
+1. Click **Settings** in the sidebar navigation
+2. You'll see the main brand settings page with all configuration options
+
+The settings page includes sections for logo, name, slug, email, country, custom domain, and brand deletion.
+
+<Note>
+  Some settings are only available to brand owners. If you're a team member, you may see limited options.
+</Note>
+
+## Brand identity settings
+
+<Steps>
+  <Step title="Upload your brand logo">
+    Your logo appears on all Digital Product Passports and in the Avelero interface.
+    
+    **To upload or change your logo:**
+    
+    1. In the **Logo** section, click on the circular logo placeholder
+    2. Select an image file from your computer
+    3. The logo uploads automatically
+    
+    **Logo requirements:**
+    - Recommended size: At least 400x400 pixels
+    - Supported formats: JPG, PNG, WebP
+    - Square images work best (will be displayed in a circle)
+    - File size: Under 5MB
+    
+    <Info>
+      Your logo is displayed in a circle, so square or circular logo designs work best. Rectangular logos will be cropped to fit.
+    </Info>
+  </Step>
+
+  <Step title="Set your brand name">
+    Your brand name appears throughout the platform and on customer-facing passports.
+    
+    **To update your brand name:**
+    
+    1. In the **Brand name** section, click **Edit**
+    2. Enter your new brand name
+    3. Click **Save**
+    
+    The brand name should be:
+    - Your official company or brand name
+    - At least 2 characters long
+    - Clear and professional
+    
+    <Warning>
+      Changing your brand name doesn't affect existing passport URLs, but it will appear differently to customers viewing your passports.
+    </Warning>
+  </Step>
+
+  <Step title="Configure your brand slug">
+    The brand slug is used in your passport URLs and should be memorable and relevant.
+    
+    **To set or change your slug:**
+    
+    1. In the **Brand slug** section, click **Edit**
+    2. Enter your desired slug
+    3. Click **Save**
+    
+    **Slug requirements:**
+    - Lowercase letters, numbers, and hyphens only
+    - No spaces or special characters
+    - Must be unique across Avelero
+    - Should be short and memorable
+    
+    **Example slugs:**
+    - `acme-apparel`
+    - `sustainable-goods`
+    - `organic-textiles`
+    
+    <Info>
+      Your slug appears in URLs like `avelero.com/brand/your-slug/product-handle`. Choose something that represents your brand well.
+    </Info>
+  </Step>
+
+  <Step title="Add a contact email">
+    The contact email is displayed on your Digital Product Passports, allowing customers to reach you.
+    
+    **To set your contact email:**
+    
+    1. In the **Email** section, click **Edit**
+    2. Enter a customer-facing email address (e.g., support@yourbrand.com)
+    3. Click **Save**
+    
+    <Note>
+      Use an email address that your team monitors regularly, as customers may use it for product inquiries or feedback.
+    </Note>
+  </Step>
+
+  <Step title="Set your country">
+    The country setting indicates where your brand is based.
+    
+    **To set or change your country:**
+    
+    1. In the **Country** section, click **Edit**
+    2. Select your country from the dropdown
+    3. Click **Save**
+    
+    This information may be displayed on your passports and is used for regional compliance.
+  </Step>
+</Steps>
+
+## Custom domain setup
+
+Custom domains allow you to use your own domain for Digital Product Passport URLs, which is required for GS1-compliant QR codes.
+
+<Info>
+  Custom domains are only available to brand owners. Team members won't see this option.
+</Info>
+
+### Why use a custom domain?
+
+**Brand consistency**
+- Passport URLs use your domain (e.g., `products.yourbrand.com/item-123`)
+- Builds trust with customers who see your familiar domain
+
+**GS1 compliance**
+- Required for GS1 Digital Link QR codes
+- Enables standardized product identification
+
+**Professional appearance**
+- Your brand owns the entire customer experience
+- No third-party branding in URLs
+
+### Setting up a custom domain
+
+<Steps>
+  <Step title="Open the custom domain configuration">
+    1. In the **Custom Domain** section, click **Configure**
+    2. The custom domain modal will open
+    
+    If you already have a domain configured, you'll see its current status (Verified, Pending, or Verification Needed).
+  </Step>
+
+  <Step title="Enter your domain">
+    1. Enter the subdomain you want to use (e.g., `products.yourbrand.com`)
+    2. Click **Add Domain**
+    
+    <Warning>
+      Use a subdomain (like `products.yourbrand.com`), not your root domain (`yourbrand.com`). This prevents conflicts with your main website.
+    </Warning>
+    
+    **Recommended subdomain names:**
+    - `products.yourbrand.com`
+    - `passport.yourbrand.com`
+    - `verify.yourbrand.com`
+  </Step>
+
+  <Step title="Add DNS records">
+    After adding your domain, Avelero will provide DNS records that you need to add:
+    
+    **CNAME record:**
+    - Points your subdomain to Avelero's infrastructure
+    - Add this record in your domain registrar's DNS settings
+    
+    **TXT record (for verification):**
+    - Proves you own the domain
+    - Also added in your DNS settings
+    
+    **Where to add DNS records:**
+    
+    The exact location varies by provider, but generally:
+    1. Log in to your domain registrar (GoDaddy, Namecheap, Cloudflare, etc.)
+    2. Find DNS settings or DNS management
+    3. Add new records with the exact values provided by Avelero
+    4. Save your changes
+    
+    <Info>
+      DNS changes can take up to 48 hours to propagate, but typically complete within a few hours.
+    </Info>
+  </Step>
+
+  <Step title="Verify your domain">
+    After adding DNS records:
+    
+    1. Return to the custom domain configuration in Avelero
+    2. Click **Verify Domain**
+    3. Avelero checks if the DNS records are correctly configured
+    
+    **Status indicators:**
+    
+    - **Verified** (green dot): Domain is fully configured and active
+    - **Pending** (yellow dot): DNS records are being checked, verification in progress
+    - **Verification Needed** (red dot): DNS records are missing or incorrect
+    
+    If verification fails:
+    - Double-check the DNS records match exactly what Avelero provided
+    - Wait a few hours for DNS propagation
+    - Try verifying again
+  </Step>
+</Steps>
+
+### Managing your custom domain
+
+**View domain status**
+- The current status is shown in the Custom Domain section
+- A badge indicates Verified, Pending, or Verification Needed
+- Hover over "Verification Needed" for more details
+
+**Update DNS records**
+- If records change, Avelero will notify you
+- Click **Configure** to see updated record values
+- Update your DNS settings accordingly
+
+**Remove a custom domain**
+- Click the three-dot menu (⋯) next to the Configure button
+- Select **Remove domain**
+- Confirm the removal
+- Your passports will revert to Avelero-hosted URLs
+
+<Warning>
+  Removing a custom domain will break any QR codes or links using that domain. Only remove if you're replacing it with a new domain or no longer need the feature.
+</Warning>
+
+## Theme customization
+
+Customize how your Digital Product Passports look to match your brand identity:
+
+1. Click **Theme** in the sidebar
+2. Configure your theme settings:
+   - Brand colors
+   - Typography
+   - Layout preferences
+3. Preview changes in real-time
+4. Click **Save** to apply your theme
+
+<Info>
+  Theme changes apply to all your published Digital Product Passports immediately.
+</Info>
+
+## Team management
+
+Invite team members to collaborate on your Digital Product Passports:
+
+### Adding team members
+
+1. Navigate to **Settings > Members**
+2. Click **Invite member**
+3. Enter the email address
+4. Select a role:
+   - **Owner**: Full access, can manage billing and delete the brand
+   - **Member**: Can create and edit products, limited settings access
+5. Click **Send invite**
+
+The invited person will receive an email with instructions to join your brand.
+
+### Managing existing members
+
+- View all team members in the Members list
+- See each member's role and status
+- Remove members if needed (owners only)
+- Change member roles (owners only)
+
+<Note>
+  Every brand must have at least one owner. You can't remove the last owner.
+</Note>
+
+## Catalog management
+
+Your brand catalog includes reusable data that makes product creation faster:
+
+### Materials catalog
+
+**Settings > Materials**
+
+- Add common materials your products use
+- Include country of origin for each material
+- Materials appear as options when creating products
+
+### Attributes catalog
+
+**Settings > Attributes**
+
+- Define product characteristics (Color, Size, Material, Style, etc.)
+- Create attribute values (Small, Medium, Large for Size)
+- Assign colors to values for visual distinction
+- Used for product variants
+
+### Manufacturers catalog
+
+**Settings > Manufacturers**
+
+- Add your manufacturing partners
+- Include company name and location
+- Link manufacturers to products for transparency
+
+### Operators catalog
+
+**Settings > Operators**
+
+- List facilities in your supply chain
+- Include facility name, location, and contact
+- Used in product journey mapping
+
+### Certifications catalog
+
+**Settings > Certifications**
+
+- Add sustainability certifications
+- Include certification body and validity
+- Attach to relevant products
+
+### Seasons and tags
+
+**Settings > Seasons** and **Settings > Tags**
+
+- Create seasons or collections (Spring 2024, Summer 2024, etc.)
+- Define custom tags for organization
+- Use for filtering and grouping products
+
+## Advanced settings
+
+### Integrations
+
+**Settings > Integrations**
+
+Connect external platforms to Avelero:
+- E-commerce platforms
+- Inventory management systems
+- Analytics tools
+
+Each integration has specific setup instructions. Click on an integration to configure it.
+
+### Brand deletion
+
+<Warning>
+  Brand deletion is permanent and cannot be undone. This option is only available to brand owners.
+</Warning>
+
+To delete your brand:
+
+1. Scroll to the bottom of the Settings page
+2. In the **Delete Brand** section, click **Delete**
+3. Confirm by typing your brand name
+4. All products, passports, and data will be permanently deleted
+
+Only delete your brand if you're certain you no longer need it. Consider exporting data first if you want to keep records.
+
+## Best practices
+
+<Accordion title="Keep your brand information up to date">
+  Regularly review your brand settings, especially contact email and domain configuration. Outdated information can lead to missed customer inquiries or broken passport links.
+</Accordion>
+
+<Accordion title="Use descriptive brand slugs">
+  Choose a slug that clearly represents your brand and is easy to remember. Avoid generic terms or acronyms that customers might not recognize.
+</Accordion>
+
+<Accordion title="Verify custom domains promptly">
+  After adding DNS records, verify your domain as soon as possible. Unverified domains won't work for passport URLs and QR codes.
+</Accordion>
+
+<Accordion title="Populate your catalog before creating many products">
+  Setting up materials, attributes, and operators first saves significant time when creating multiple products. You can select from dropdowns instead of creating each time.
+</Accordion>
+
+<Accordion title="Assign appropriate roles to team members">
+  Give team members the minimum access they need. Reserve owner role for trusted administrators who need full control.
+</Accordion>
+
+## Troubleshooting
+
+**Problem: Custom domain shows "Verification Needed"**
+
+Solution: 
+1. Check that DNS records match exactly (copy-paste to avoid typos)
+2. Wait 1-4 hours for DNS propagation
+3. Use a DNS checker tool to verify records are published
+4. Try the verification again
+
+**Problem: Logo appears blurry**
+
+Solution: Upload a higher resolution image. Logos should be at least 400x400 pixels. Larger is better for display on high-DPI screens.
+
+**Problem: Can't change brand slug**
+
+Solution: Ensure the new slug meets requirements (lowercase, no spaces, alphanumeric plus hyphens). The slug may already be taken by another brand.
+
+**Problem: Team member can't see settings**
+
+Solution: Some settings are owner-only. If they need access, an owner must change their role or make specific changes on their behalf.
+
+## Next steps
+
+With your brand configured:
+
+- Create Digital Product Passports that reflect your brand identity
+- Share passport URLs with customers via QR codes
+- Monitor passport views and engagement
+- Continuously improve your product data for transparency
+
+<Card title="Creating your first product" icon="package" href="/guides/creating-your-first-product">
+  Ready to create passports? Follow our complete product creation guide
+</Card>

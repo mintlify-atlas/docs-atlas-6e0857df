@@ -1,0 +1,249 @@
+---
+title: DPP configuration
+description: Configure and manage Digital Product Passport publishing settings
+---
+
+The DPP configuration API provides tRPC procedures for managing passport publishing, cache revalidation, and preview functionality.
+
+## Publishing passports
+
+### Publish a single passport
+
+```typescript
+trpc.dpp.publish.mutate({
+  variant_id: "uuid-here"
+})
+```
+
+<ParamField body="variant_id" type="string" required>
+  UUID of the variant to publish as a DPP
+</ParamField>
+
+**Response:**
+<ResponseField name="upid" type="string">
+  The 16-character unique passport identifier for the published DPP
+</ResponseField>
+
+<ResponseField name="version" type="number">
+  Version number of the published snapshot (increments with each publish)
+</ResponseField>
+
+<ResponseField name="published_at" type="string">
+  ISO 8601 timestamp of publication
+</ResponseField>
+
+**Behavior:**
+- Creates an immutable snapshot of the variant's current data
+- Generates a UPID if this is the first publication
+- Increments version number if updating an existing passport
+- Revalidates the cache for the passport URL
+
+### Bulk publish passports
+
+```typescript
+trpc.dpp.publishBulk.mutate({
+  variant_ids: ["uuid-1", "uuid-2", "uuid-3"]
+})
+```
+
+<ParamField body="variant_ids" type="string[]" required>
+  Array of variant UUIDs to publish
+</ParamField>
+
+**Response:**
+<ResponseField name="published" type="number">
+  Count of successfully published passports
+</ResponseField>
+
+<ResponseField name="failed" type="number">
+  Count of variants that failed to publish
+</ResponseField>
+
+<ResponseField name="passports" type="array">
+  Array of published passport details (upid, version, published_at)
+</ResponseField>
+
+## Cache revalidation
+
+### Revalidate DPP cache
+
+After publishing, the cache is automatically revalidated. For manual revalidation:
+
+```typescript
+POST /api/revalidate
+Authorization: Bearer {REVALIDATION_SECRET}
+
+{
+  "upid": "A1b2C3d4E5f6G7h8"
+}
+```
+
+<ParamField body="upid" type="string" required>
+  UPID of the passport to revalidate
+</ParamField>
+
+<ParamField header="Authorization" type="string" required>
+  Bearer token with the revalidation secret (configured via `REVALIDATION_SECRET` env var)
+</ParamField>
+
+<Warning>
+The revalidation endpoint is protected by a secret token. Never expose this token in client-side code. It should only be called from server-side contexts (tRPC API, background jobs).
+</Warning>
+
+**Response:**
+```json
+{
+  "revalidated": true,
+  "upid": "A1b2C3d4E5f6G7h8",
+  "timestamp": "2024-03-02T10:30:00Z"
+}
+```
+
+## Preview functionality
+
+### Preview unpublished changes
+
+Preview a passport before publishing:
+
+```typescript
+trpc.dpp.preview.query({
+  variant_id: "uuid-here"
+})
+```
+
+<ParamField query="variant_id" type="string" required>
+  UUID of the variant to preview
+</ParamField>
+
+**Response:**
+Returns the complete DPP data structure as it would appear when published:
+
+<ResponseField name="dppData" type="object">
+  <Expandable title="properties">
+    <ResponseField name="productAttributes" type="object">
+      Product-level data (name, description, manufacturer, etc.)
+    </ResponseField>
+    <ResponseField name="variantAttributes" type="object">
+      Variant-level data (color, size, SKU, barcode, etc.)
+    </ResponseField>
+    <ResponseField name="materials" type="array">
+      Material composition with percentages
+    </ResponseField>
+    <ResponseField name="journey" type="array">
+      Supply chain journey steps
+    </ResponseField>
+    <ResponseField name="environment" type="object">
+      Environmental impact data (carbon, water)
+    </ResponseField>
+    <ResponseField name="certifications" type="array">
+      Product and material certifications
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="themeConfig" type="object">
+  Brand theme configuration (menus, CTA, social links, section visibility)
+</ResponseField>
+
+<ResponseField name="themeStyles" type="object">
+  Brand theme styles (colors, typography, component classes)
+</ResponseField>
+
+<Note>
+Preview queries are not cached and always reflect the current state of the variant. Use this for testing changes before publishing.
+</Note>
+
+## Unpublishing passports
+
+To unpublish a passport, delete the variant. The passport will remain accessible but marked as inactive.
+
+```typescript
+trpc.variants.delete.mutate({
+  id: "uuid-here"
+})
+```
+
+<Info>
+Deleted variants maintain their published snapshots for immutability. The passport page displays an "inactive" indicator but remains viewable to preserve historical data.
+</Info>
+
+## Passport versioning
+
+Each time you publish changes to a variant:
+
+1. **First publication**: Creates passport record with `version: 1` and generates UPID
+2. **Subsequent publications**: Increments version number, creates new snapshot
+3. **Version history**: All snapshots are retained in the database (immutable audit trail)
+
+**Version data:**
+- Current version number
+- Publication timestamp
+- Snapshot of all product/variant data at time of publication
+- Theme configuration at time of publication
+
+<Accordion title="Why immutable snapshots?">
+Immutable snapshots ensure that published passports never change unexpectedly. This is critical for:
+- **Regulatory compliance**: EU ESPR requires published data to remain accessible
+- **Consumer trust**: QR codes on physical products must point to stable data
+- **Audit trails**: Historical versions provide proof of what was published when
+- **Cache efficiency**: Immutable content can be cached indefinitely
+</Accordion>
+
+## Implementation reference
+
+The DPP configuration API is implemented in:
+- `/apps/api/src/trpc/routers/dpp/publish.ts` - Publishing procedures
+- `/apps/api/src/trpc/routers/dpp/preview.ts` - Preview functionality
+- `/apps/dpp/src/app/api/revalidate/route.ts` - Cache revalidation endpoint
+- `/packages/db/src/queries/dpp/` - Database queries for snapshots
+
+## Common workflows
+
+### Publishing workflow
+
+<Steps>
+  <Step title="Create or update product data">
+    Use the products API to create/update product and variant data
+  </Step>
+  <Step title="Preview changes">
+    Call `trpc.dpp.preview.query()` to verify data looks correct
+  </Step>
+  <Step title="Publish passport">
+    Call `trpc.dpp.publish.mutate()` to create immutable snapshot
+  </Step>
+  <Step title="Cache revalidates automatically">
+    The API automatically calls the revalidation endpoint
+  </Step>
+  <Step title="QR code points to UPID">
+    Generate QR code pointing to `https://passport.avelero.com/{upid}`
+  </Step>
+</Steps>
+
+### Updating published passport
+
+<Steps>
+  <Step title="Modify variant data">
+    Update materials, journey, environmental data, etc. via API
+  </Step>
+  <Step title="Re-publish">
+    Call `trpc.dpp.publish.mutate()` again with same `variant_id`
+  </Step>
+  <Step title="Version increments">
+    New snapshot created with incremented version number
+  </Step>
+  <Step title="UPID stays the same">
+    The UPID does not change - QR codes continue to work
+  </Step>
+  <Step title="Cache revalidates">
+    Consumers immediately see updated data
+  </Step>
+</Steps>
+
+<CardGroup cols={2}>
+  <Card title="Public access" icon="eye" href="/api/dpp/public-access">
+    Learn about public DPP endpoints
+  </Card>
+  <Card title="Products API" icon="box" href="/api/products/overview">
+    Manage product data
+  </Card>
+</CardGroup>

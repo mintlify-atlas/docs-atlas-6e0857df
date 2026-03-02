@@ -1,0 +1,178 @@
+---
+title: Product data structure
+description: Learn how products and variants are structured in Avelero, including attributes, handles, and status management
+---
+
+Avelero organizes product data using a two-tier hierarchy: **products** and **variants**. Understanding this structure is essential for managing your digital product passports effectively.
+
+## Products vs variants
+
+Every item in your catalog starts as a product. Products can have multiple variants that represent different versions or configurations of the same product.
+
+### Product level
+
+The product level stores information shared across all variants:
+
+- **Name and description**: Base product information
+- **Product handle**: Unique URL-friendly identifier (e.g., `summer-tote-bag`)
+- **Category**: Product classification from the taxonomy
+- **Manufacturer**: Production facility
+- **Season**: Collection or seasonal grouping
+- **Image**: Primary product image
+- **Status**: Publication state (`published`, `unpublished`, or `scheduled`)
+
+<Info>
+Product handles must be unique within your brand. They're used to generate public passport URLs and cannot be changed after creation if the product is published.
+</Info>
+
+### Variant level
+
+Variants inherit product-level data but can override specific fields:
+
+- **SKU**: Stock keeping unit for inventory management
+- **Barcode**: Product barcode (must be unique within your brand)
+- **UPID**: Universal Product ID (must be unique within your brand)
+- **Name override**: Custom name that replaces the product name
+- **Description override**: Custom description specific to this variant
+- **Image override**: Variant-specific image
+
+<Note>
+When a variant has override values (name, description, or image), those values take precedence over the product-level data in the digital product passport.
+</Note>
+
+## Product attributes
+
+Attributes define product characteristics like color, size, or material type. They help differentiate variants within a product.
+
+<Steps>
+  <Step title="Define brand attributes">
+    Create reusable attributes in your brand catalog (e.g., "Color", "Size")
+  </Step>
+  
+  <Step title="Add attribute values">
+    Define the possible values for each attribute (e.g., Color: "Blue", "Red", "Green")
+  </Step>
+  
+  <Step title="Assign to variants">
+    Link attribute values to specific variants to describe their characteristics
+  </Step>
+</Steps>
+
+Attributes are stored separately from products and can be reused across your entire catalog. Each variant can have multiple attribute values assigned with a custom sort order.
+
+## Product handles
+
+The product handle is a URL-safe identifier that determines your passport's web address:
+
+```
+https://your-brand.avelero.io/p/product-handle
+```
+
+**Handle requirements:**
+- Must be unique within your brand
+- Contains only lowercase letters, numbers, and hyphens
+- Cannot start or end with a hyphen
+- Generated automatically from the product name, but can be customized
+
+<Info>
+If you need to change a handle after publishing, create a new product instead. Changing handles breaks existing QR codes and links.
+</Info>
+
+## Publication status
+
+Products can be in one of three status states:
+
+<Accordion title="Unpublished">
+Draft state. The product exists in your catalog but is not visible to the public. Digital product passports cannot be accessed.
+
+**Use cases:**
+- Products still being configured
+- Seasonal products not yet launched
+- Products pending data completion
+</Accordion>
+
+<Accordion title="Published">
+Live state. The product is visible to the public and digital product passports are accessible via QR codes or direct links.
+
+**Requirements before publishing:**
+- At least one variant must exist
+- Product handle must be set
+- All required data should be complete
+</Accordion>
+
+<Accordion title="Scheduled">
+Visual indicator only. Products marked as scheduled are not automatically published—they remain unpublished until manually changed to published status.
+
+**Use case:**
+- Mark products intended for future release
+- Coordinate with your launch calendar
+</Accordion>
+
+## Data inheritance
+
+Variants inherit data from the product level but can override specific values. This creates a flexible hierarchy:
+
+| Data type | Product level | Variant level | Rendering behavior |
+|-----------|---------------|---------------|--------------------|
+| Name | Required | Optional override | Variant override takes precedence |
+| Description | Optional | Optional override | Variant override takes precedence |
+| Image | Optional | Optional override | Variant override takes precedence |
+| Materials | Optional | Optional override | Variant data **replaces** product data |
+| Journey steps | Optional | Optional override | Variant data **replaces** product data |
+| Environment data | Optional | Optional override | Variant data takes precedence |
+| Attributes | N/A | Variant only | Stored at variant level |
+
+<Note>
+For materials and journey steps, variant-level data completely replaces product-level data—they don't merge. If you add even one material at the variant level, all product-level materials are ignored for that variant.
+</Note>
+
+## Ghost variants
+
+Avelero automatically creates "ghost variants" for products without explicit variants. Ghost variants:
+
+- Are system-created default variants
+- Inherit all product-level data
+- Are invisible in the product management UI
+- Enable publishing for single-variant products
+
+<Info>
+You don't need to manage ghost variants. They exist only to support the internal data model and publishing system.
+</Info>
+
+## Source tracking
+
+Products and variants track their data source:
+
+- **Manual**: Created in the Avelero UI or via bulk upload
+- **Integration**: Created by syncing with your e-commerce platform
+
+Variant-level data includes additional source tracking fields:
+
+```typescript
+{
+  sourceIntegration: "shopify",  // Integration name
+  sourceExternalId: "gid://...",  // External system ID
+}
+```
+
+This metadata helps maintain data integrity when syncing with external systems.
+
+## Best practices
+
+<Steps>
+  <Step title="Use products for shared data">
+    Store information common to all variants at the product level. This reduces duplication and makes updates easier.
+  </Step>
+  
+  <Step title="Use variants for differentiation">
+    Create variants only when products differ in meaningful ways (size, color, configuration). Don't create variants unnecessarily.
+  </Step>
+  
+  <Step title="Plan your handles carefully">
+    Choose descriptive, stable handles. They become permanent once you publish and start using QR codes.
+  </Step>
+  
+  <Step title="Complete data before publishing">
+    Unpublished products are your workspace. Take time to add materials, journey steps, and environmental data before making products public.
+  </Step>
+</Steps>

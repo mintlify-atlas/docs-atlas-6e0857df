@@ -1,0 +1,309 @@
+---
+title: Creating your first product
+description: A complete step-by-step guide to creating a Digital Product Passport in Avelero, from basic information to variants and environmental data.
+---
+
+This guide walks you through creating your first Digital Product Passport from start to finish. You'll learn how to add product information, materials, journey data, environmental metrics, and variants.
+
+## Before you start
+
+For the best experience, set up your catalog data first:
+
+- Add materials you commonly use in **Settings > Materials**
+- Create product attributes (color, size, etc.) in **Settings > Attributes**
+- Add your manufacturing facilities in **Settings > Operators**
+
+This preparation makes product creation faster and ensures consistency.
+
+## Creating a new passport
+
+<Steps>
+  <Step title="Navigate to the create page">
+    From the main dashboard:
+    
+    1. Click **Passports** in the sidebar
+    2. Click the **Create passport** button or the **+** icon
+    
+    You'll see the passport creation form with several sections.
+  </Step>
+
+  <Step title="Add basic information">
+    Start by filling in the essential product details:
+    
+    **Name** (required)
+    - Enter a clear, descriptive product name
+    - As you type, a product handle is automatically generated (e.g., "Summer Tote Bag" becomes "summer-tote-bag")
+    - This handle will be used in your passport URLs
+    
+    **Description**
+    - Add a detailed product description (up to 2000 characters)
+    - This appears on the public-facing Digital Product Passport
+    
+    **Image**
+    - Click the image upload area to select a product photo
+    - Supported formats: JPG, PNG, WebP
+    - Recommended size: At least 800x800px for best quality
+    
+    <Info>
+      The product handle can be customized in the right sidebar under Identifiers if you want a different URL structure.
+    </Info>
+  </Step>
+
+  <Step title="Organize your product">
+    The Organization section helps you categorize and find products:
+    
+    **Category**
+    - Select the product category (optional)
+    - Categories are defined in Settings > Attributes
+    
+    **Season**
+    - Assign the product to a season or collection
+    - Manage seasons in Settings > Seasons
+    
+    **Tags**
+    - Add relevant tags for filtering and organization
+    - Create tags in Settings > Tags
+  </Step>
+
+  <Step title="Define product variants">
+    If your product comes in different versions (colors, sizes, etc.), set up variants:
+    
+    <Accordion title="For products without variants">
+      If your product doesn't have variants, you can skip this section. A single default variant will be created.
+    </Accordion>
+    
+    <Accordion title="For products with variants">
+      **Add an attribute dimension:**
+      
+      1. Click **Select attribute** or **Add attribute**
+      2. Choose an existing attribute (e.g., "Color") or create a custom one
+      3. Select the values that apply to this product (e.g., "Black", "Navy", "White")
+      
+      **Add multiple dimensions:**
+      
+      - You can add up to 3 attribute dimensions (e.g., Color + Size + Material)
+      - Avelero automatically generates all combinations
+      - You can enable/disable specific combinations in the variant table
+      
+      **Set variant-specific data:**
+      
+      For each variant, you can optionally add:
+      - **SKU**: Stock keeping unit for inventory management
+      - **Barcode**: Product barcode (EAN, UPC, etc.)
+      
+      <Info>
+        Variants are automatically enabled when created. You can disable variants you don't sell by unchecking them in the variant table.
+      </Info>
+    </Accordion>
+  </Step>
+
+  <Step title="Add environmental data">
+    The Environment section captures sustainability metrics:
+    
+    **Carbon footprint**
+    - Enter the carbon emissions in kgCO2e (kilograms of CO2 equivalent)
+    - This should reflect the product's lifecycle emissions
+    
+    **Water usage**
+    - Enter water consumption in liters
+    - Include all water used in production
+    
+    **Product weight**
+    - Enter the product weight in grams
+    - This is the final product weight
+    
+    <Note>
+      All environmental fields are optional but highly recommended for transparency. You can leave them blank if data isn't available yet and add it later.
+    </Note>
+    
+    <Info>
+      Environmental data appears on the public Digital Product Passport, helping consumers make informed decisions.
+    </Info>
+  </Step>
+
+  <Step title="Specify materials">
+    The Materials section is where you document what the product is made of:
+    
+    **Add a material:**
+    
+    1. Click **Add material** to create a new row
+    2. Select a material from your catalog (e.g., "Organic Cotton")
+    3. The country of origin auto-fills from the material's catalog entry
+    4. Enter the percentage (e.g., 95 for 95%)
+    
+    **Create new materials:**
+    
+    - If a material isn't in your catalog, type to search and click **Create "Material Name"**
+    - Fill in the material details in the sheet that appears
+    - The new material will be added to your catalog for future use
+    
+    **Material percentages:**
+    
+    - The total should equal 100%
+    - A running total is displayed at the bottom
+    - If the total exceeds 100%, it will be highlighted in red
+    
+    <Warning>
+      While material data is optional, providing complete and accurate material information is important for regulatory compliance in many regions.
+    </Warning>
+  </Step>
+
+  <Step title="Map the product journey">
+    The Journey section documents your supply chain:
+    
+    **Add a journey step:**
+    
+    1. Click **Add step** to create a new row
+    2. **Select the production step** (e.g., "Weaving", "Dyeing", "Assembly")
+       - Choose from predefined steps or type a custom one
+    3. **Select the operator** (facility where this step occurs)
+       - Choose from your operators list (Settings > Operators)
+       - You can select multiple operators for one step
+       - Click **Create** if the facility isn't in your catalog yet
+    
+    **Reorder steps:**
+    
+    - Drag the grip icon (⋮⋮) to reorder journey steps
+    - Arrange them in the order they occur in production
+    
+    **Remove a step:**
+    
+    - Click the three-dot menu (⋯) on a row
+    - Select **Delete**
+    
+    <Info>
+      Journey data provides supply chain transparency, showing consumers where and how their product was made.
+    </Info>
+  </Step>
+
+  <Step title="Configure identifiers and status">
+    In the right sidebar, you'll find additional settings:
+    
+    **Status sidebar:**
+    
+    - **Draft**: Product is hidden from public view (default)
+    - **Published**: Product passport is publicly accessible
+    
+    Start with Draft while you're setting up, then switch to Published when ready.
+    
+    **Identifiers sidebar:**
+    
+    - **Product handle**: Customize the URL slug if needed
+      - Must use lowercase letters, numbers, and dashes only
+      - Should be unique and descriptive
+    - **Manufacturer**: Select the manufacturer from your catalog (optional)
+      - Manage manufacturers in Settings > Manufacturers
+    
+    <Note>
+      The product handle becomes part of the public URL for your Digital Product Passport. Choose something memorable and relevant.
+    </Note>
+  </Step>
+
+  <Step title="Save and publish">
+    When you're ready to save:
+    
+    1. Click **Save** in the top-right corner
+    2. The system validates your data:
+       - Name and product handle are required
+       - Material percentages must total 100% if provided
+       - Environmental values must be positive numbers if provided
+    3. If validation passes, your passport is saved
+    
+    **After saving:**
+    
+    - You'll be redirected to the passport edit page
+    - You can continue editing any section
+    - Set status to "Published" when ready to make it public
+    - Share the passport URL with customers via QR codes or links
+    
+    <Info>
+      Unsaved changes are detected automatically. If you try to navigate away, you'll be prompted to save or discard your work.
+    </Info>
+  </Step>
+</Steps>
+
+## Working with variants
+
+Variants deserve special attention as they can be complex:
+
+### Understanding the variant system
+
+**Automatic variant generation**
+- When you add attribute dimensions (e.g., Color, Size), Avelero creates all possible combinations
+- For Color: Black, White and Size: S, M, L → you get 6 variants (Black-S, Black-M, Black-L, White-S, White-M, White-L)
+
+**Enabling and disabling variants**
+- Not all combinations may exist (e.g., you might not sell Black-XL)
+- Uncheck variants you don't sell in the variant table
+- Only enabled variants will be included in the passport
+
+**Variant metadata**
+- Each variant can have its own SKU and barcode
+- Click on a variant row to expand and add this data
+- SKUs and barcodes help with inventory integration
+
+### Editing individual variants
+
+For products with variants that need different data (different materials, different carbon footprint, etc.), you can create variant-specific overrides:
+
+1. Save your main product first
+2. Click on a variant in the variant table
+3. Navigate to the variant edit page
+4. Override any product-level data for this specific variant
+
+<Warning>
+Variant-specific overrides are advanced functionality. Most products can use the same data for all variants.
+</Warning>
+
+## Tips for creating quality passports
+
+<Accordion title="Use high-quality product images">
+  Your product image is the first thing consumers see. Use clear, well-lit photos with a neutral background. Images should be at least 800x800 pixels for crisp display on all devices.
+</Accordion>
+
+<Accordion title="Write descriptive product names">
+  Avoid generic names like "T-Shirt". Instead use "Organic Cotton Crew Neck T-Shirt" - this helps with SEO and makes products easier to find in your dashboard.
+</Accordion>
+
+<Accordion title="Complete environmental data when possible">
+  Even estimated environmental data is better than none. Transparency builds trust with consumers. You can update values as you gather more accurate lifecycle data.
+</Accordion>
+
+<Accordion title="Keep material percentages accurate">
+  Material composition affects recyclability and consumer allergies. Ensure percentages are accurate and total exactly 100%.
+</Accordion>
+
+<Accordion title="Document your entire supply chain">
+  The journey section is powerful for storytelling. Show consumers the facilities involved, from raw material to finished product. This transparency differentiates your brand.
+</Accordion>
+
+## Common issues and solutions
+
+**Problem: Product handle is already taken**
+
+Solution: Edit the product handle in the Identifiers sidebar to make it unique. Try adding a year, style number, or other differentiator.
+
+**Problem: Material percentages show error**
+
+Solution: Ensure all material percentages are positive numbers and the total equals exactly 100%. Check for typos or decimal errors.
+
+**Problem: Can't find an operator or material**
+
+Solution: You may need to create it first in Settings > Operators or Settings > Materials. Alternatively, you can create it on-the-fly by typing the name and clicking "Create".
+
+**Problem: Variant combinations not appearing**
+
+Solution: Make sure each attribute dimension has at least one value selected. Variants are only generated when all dimensions have values.
+
+## Next steps
+
+Now that you've created your first product:
+
+- **Publish your passport**: Change the status to Published and share it with customers
+- **Generate QR codes**: Create QR codes that link to your passport
+- **Configure your brand**: Fine-tune your brand settings for a polished presentation
+- **Create more products**: Build out your complete product catalog
+
+<Card title="Configuring your brand" icon="settings" href="/guides/configuring-your-brand">
+  Customize your brand settings, logo, and custom domain for a professional appearance
+</Card>

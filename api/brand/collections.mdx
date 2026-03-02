@@ -1,0 +1,215 @@
+---
+title: Collections
+description: Manage saved product filter presets for quick access to commonly used filter configurations
+---
+
+Collections are saved product filter configurations that allow users to quickly access and reuse common filter combinations.
+
+## List collections
+
+Retrieve all collections for the active brand.
+
+```typescript
+const { data } = await trpc.brand.collections.list.query();
+```
+
+### Response
+
+<ResponseField name="data" type="array">
+  Array of collection objects
+  
+  <Expandable title="Collection object structure">
+    
+    <ResponseField name="id" type="string">
+      UUID of the collection
+    </ResponseField>
+    
+    <ResponseField name="name" type="string">
+      Collection name (1-100 characters)
+    </ResponseField>
+    
+    <ResponseField name="description" type="string | null">
+      Optional collection description (up to 500 characters)
+    </ResponseField>
+    
+    <ResponseField name="filter" type="object">
+      FilterState structure stored as JSONB representing the saved filter configuration
+    </ResponseField>
+    
+    <ResponseField name="created_at" type="string">
+      ISO 8601 timestamp of creation
+    </ResponseField>
+    
+    <ResponseField name="updated_at" type="string">
+      ISO 8601 timestamp of last update
+    </ResponseField>
+    
+  </Expandable>
+</ResponseField>
+
+---
+
+## Create collection
+
+Create a new saved filter collection for the active brand.
+
+```typescript
+const { data } = await trpc.brand.collections.create.mutate({
+  name: "Summer Collection 2024",
+  description: "Products for summer season launch",
+  filter: {
+    season: ["summer"],
+    year: 2024,
+    category: ["apparel"]
+  }
+});
+```
+
+### Input parameters
+
+<ParamField path="name" type="string" required>
+  Collection name
+  
+  **Validation:** 1-100 characters
+</ParamField>
+
+<ParamField path="description" type="string">
+  Optional collection description
+  
+  **Validation:** 1-500 characters
+</ParamField>
+
+<ParamField path="filter" type="object" required>
+  FilterState structure representing the filter configuration
+  
+  This is stored as JSONB and can contain any valid filter parameters. Common filter properties include:
+  - Product attributes (category, season, color, size)
+  - Custom fields
+  - Date ranges
+  - Status flags
+</ParamField>
+
+### Response
+
+<ResponseField name="data" type="object">
+  The created collection object with all fields including generated `id`, `created_at`, and `updated_at`
+</ResponseField>
+
+### Errors
+
+- `500 Internal Server Error`: Failed to create collection
+
+---
+
+## Update collection
+
+Update an existing collection. All fields except `id` are optional.
+
+```typescript
+const { data } = await trpc.brand.collections.update.mutate({
+  id: "collection-uuid",
+  name: "Updated Collection Name",
+  filter: {
+    season: ["summer", "spring"],
+    year: 2024
+  }
+});
+```
+
+### Input parameters
+
+<ParamField path="id" type="string" required>
+  UUID of the collection to update
+</ParamField>
+
+<ParamField path="name" type="string">
+  Updated collection name
+  
+  **Validation:** 1-100 characters
+</ParamField>
+
+<ParamField path="description" type="string | null">
+  Updated collection description (set to `null` to clear)
+  
+  **Validation:** 1-500 characters
+</ParamField>
+
+<ParamField path="filter" type="object">
+  Updated FilterState structure
+  
+  This replaces the entire filter configuration—partial updates are not supported
+</ParamField>
+
+### Response
+
+<ResponseField name="data" type="object">
+  The updated collection object with all fields
+</ResponseField>
+
+### Errors
+
+- `404 Not Found`: Collection not found
+- `500 Internal Server Error`: Failed to update collection
+
+---
+
+## Delete collection
+
+Delete a collection permanently.
+
+```typescript
+const { data } = await trpc.brand.collections.delete.mutate({
+  id: "collection-uuid"
+});
+```
+
+### Input parameters
+
+<ParamField path="id" type="string" required>
+  UUID of the collection to delete
+</ParamField>
+
+### Response
+
+<ResponseField name="data" type="object">
+  The deleted collection object
+</ResponseField>
+
+### Errors
+
+- `404 Not Found`: Collection not found
+- `500 Internal Server Error`: Failed to delete collection
+
+---
+
+## Filter structure
+
+The `filter` field in collections stores a FilterState object as JSONB. This flexible structure allows you to save any combination of product filters.
+
+### Common filter properties
+
+```typescript
+{
+  // Product categorization
+  category: ["apparel", "accessories"],
+  subcategory: ["tops", "bottoms"],
+  
+  // Product attributes
+  season: ["summer", "spring"],
+  year: 2024,
+  color: ["blue", "green"],
+  size: ["S", "M", "L"],
+  
+  // Status and flags
+  published: true,
+  archived: false,
+  
+  // Custom fields
+  custom_field_1: "value",
+  custom_field_2: ["option1", "option2"]
+}
+```
+
+<Note>
+The filter structure is flexible and validated client-side. You can include any fields that match your product schema and filtering requirements.
+</Note>

@@ -1,0 +1,121 @@
+---
+title: Welcome to Avelero
+description: Create and manage Digital Product Passports for your fashion brand
+---
+
+<img
+  className="block"
+  src="/images/hero-light.svg"
+  alt="Hero Light"
+/>
+
+## What is Avelero?
+
+Avelero is a comprehensive SaaS platform that enables fashion brands to create, manage, and publish Digital Product Passports (DPPs) for their products. Built to meet EU ESPR regulations, Avelero provides everything you need to deliver transparent supply chain and sustainability data to your customers.
+
+Each product passport includes:
+
+- Product identifiers (UPID, SKU, barcode)
+- Material composition and certifications
+- Environmental impact data (carbon, water usage)
+- Complete supply chain journey
+- Manufacturer and operator information
+
+## Key features
+
+<CardGroup cols={2}>
+  <Card
+    title="Product management"
+    icon="box"
+    href="/features/product-catalog"
+  >
+    Create products with variants, materials, and environmental data
+  </Card>
+  <Card
+    title="Passport publishing"
+    icon="id-card"
+    href="/features/digital-product-passports"
+  >
+    Publish immutable DPP versions with unique QR codes
+  </Card>
+  <Card
+    title="Brand customization"
+    icon="palette"
+    href="/features/brand-customization"
+  >
+    Customize passport appearance with your brand's colors and fonts
+  </Card>
+  <Card
+    title="Integrations"
+    icon="plug"
+    href="/integrations/shopify"
+  >
+    Sync products from Shopify and other e-commerce platforms
+  </Card>
+</CardGroup>
+
+## How it works
+
+<Steps>
+  <Step title="Create your brand">
+    Set up your brand profile with name, logo, and country information
+  </Step>
+  <Step title="Add products">
+    Create products with details like materials, manufacturers, and supply chain steps
+  </Step>
+  <Step title="Define variants">
+    Add product variants with attributes like color, size, and SKU
+  </Step>
+  <Step title="Publish passports">
+    Generate immutable DPP versions with unique UPIDs for each variant
+  </Step>
+  <Step title="Share with customers">
+    Each passport gets a public URL and QR code for easy customer access
+  </Step>
+</Steps>
+
+## Understanding UPIDs
+
+Every published product passport receives a **UPID** (Unique Product Identifier) - a 16-character alphanumeric string that serves as the permanent identifier for that specific variant.
+
+```
+Example UPID: 771Gh4J11gLj345m
+Public URL: passport.avelero.com/771Gh4J11gLj345m
+```
+
+<Info>
+  UPIDs are permanent. Even if you delete a product variant from your catalog, the passport remains accessible at its UPID URL, ensuring QR codes printed on products continue to work.
+</Info>
+
+## Get started
+
+<CardGroup cols={2}>
+  <Card
+    title="Quickstart guide"
+    icon="rocket"
+    href="/quickstart"
+  >
+    Create your first product and publish a DPP in 5 minutes
+  </Card>
+  <Card
+    title="API reference"
+    icon="code"
+    href="/api/introduction"
+  >
+    Build custom integrations with our tRPC API
+  </Card>
+  <Card
+    title="Example DPP"
+    icon="eye"
+    href="https://passport.avelero.com/demo"
+  >
+    See what a published passport looks like to your customers
+  </Card>
+  <Card
+    title="ESPR compliance"
+    icon="shield-check"
+    href="/compliance/eu-dpp-regulation"
+  >
+    Learn how Avelero helps meet EU regulations
+  </Card>
+</CardGroup>

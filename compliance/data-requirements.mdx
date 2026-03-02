@@ -1,0 +1,339 @@
+---
+title: Digital Product Passport data requirements
+description: A comprehensive breakdown of the data fields fashion brands need to collect for EU DPP compliance.
+---
+
+The Digital Product Passport for textiles will require brands to collect and share detailed information about their products. While the textile-specific delegated act hasn't been finalized yet, the ESPR framework and preparatory studies give us a clear picture of what to expect.
+
+This page breaks down each expected data requirement, what it means in practice, and where brands typically source this information.
+
+<Note>
+These are expected requirements based on the ESPR framework and EU preparatory work. The final data fields will be confirmed in the textile delegated act, expected in 2027.
+</Note>
+
+## Product identification
+
+Basic information that uniquely identifies the product and makes it traceable across systems.
+
+### Required fields
+
+- **Product name**: Commercial name of the product
+- **Product type**: Category (e.g., t-shirt, dress, jacket)
+- **Color**: Official color name or code
+- **Size**: Size designation (XS, S, M, L, etc.)
+- **Unique identifier**: GTIN, EAN, or similar standardized code
+
+<Info>
+The unique identifier should follow [GS1 standards](https://www.gs1.org/standards/gs1-digital-link) and be linked to the DPP's QR code.
+</Info>
+
+### Where this data comes from
+
+Most brands already have this data in their:
+
+- Product information management (PIM) systems
+- E-commerce platforms (Shopify, WooCommerce, etc.)
+- Enterprise resource planning (ERP) systems
+- Product lifecycle management (PLM) tools
+
+## Manufacturer and importer details
+
+Information about who is responsible for placing the product on the EU market.
+
+### Required fields
+
+- **Manufacturer name**: Legal entity name
+- **Manufacturer address**: Registered business address
+- **Importer details**: If different from manufacturer
+- **Contact information**: Email or customer service contact
+
+<Warning>
+The entity listed here is legally responsible for DPP compliance. Make sure this accurately reflects your supply chain structure.
+</Warning>
+
+### Where this data comes from
+
+- Company registration documents
+- Supplier agreements
+- Import/export documentation
+
+## Material composition
+
+Detailed breakdown of what the product is made from, including percentages for each material.
+
+### Required fields
+
+- **Material type**: Fiber or fabric name (e.g., cotton, polyester, wool)
+- **Percentage**: Weight percentage of each material
+- **Material standards**: Classification according to textile standards
+
+### Example
+
+```
+95% Organic Cotton
+5% Elastane
+```
+
+### Where this data comes from
+
+- PLM systems
+- Tech packs and specifications
+- Supplier material declarations
+- Lab test reports
+
+<Info>
+Avelero helps you structure material composition data in the format required for DPP compliance.
+</Info>
+
+## Material origins
+
+Geographic information about where materials are sourced from.
+
+### Required fields
+
+- **Country of origin**: Where raw materials were produced
+- **Region**: More specific geographic data where available
+- **Supplier location**: Facilities involved in material production
+
+### Where this data comes from
+
+- Supplier questionnaires
+- Material certificates (GOTS, RWS, etc.)
+- Supply chain mapping tools
+- Customs documentation
+
+## Supply chain traceability
+
+Information about the production journey from raw material to finished product.
+
+### Required fields
+
+<AccordionGroup>
+  <Accordion title="Tier 1: Assembly and finishing">
+    - Facility name and location
+    - Manufacturing processes (cutting, sewing, assembly)
+    - Completion dates
+  </Accordion>
+
+  <Accordion title="Tier 2: Fabric production">
+    - Fabric mill name and location
+    - Dyeing facility (if separate)
+    - Finishing treatments
+  </Accordion>
+
+  <Accordion title="Tier 3: Yarn and fiber processing">
+    - Spinning facility location
+    - Fiber processing details
+  </Accordion>
+
+  <Accordion title="Tier 4: Raw material extraction">
+    - Farm, plantation, or extraction site
+    - Geographic coordinates where available
+  </Accordion>
+</AccordionGroup>
+
+<Note>
+Supply chain traceability is one of the more demanding requirements because it depends on data from suppliers who may not be accustomed to sharing this level of detail.
+</Note>
+
+### Where this data comes from
+
+- Supplier relationship management systems
+- Factory audit reports
+- Certification chain-of-custody documents
+- Direct supplier engagement and questionnaires
+
+## Substances of concern
+
+Disclosure of chemicals, dyes, and finishing treatments used in production.
+
+### Required fields
+
+- **Chemical substances**: Names and CAS numbers
+- **Dyes and pigments**: Types and classifications
+- **Finishing treatments**: Water repellents, coatings, etc.
+- **REACH compliance**: Alignment with EU chemicals regulation
+
+<Warning>
+Substances of Concern disclosure is critical for both consumer safety and end-of-life recycling. Incomplete data here can block market access.
+</Warning>
+
+### Where this data comes from
+
+- Material Safety Data Sheets (MSDS)
+- Supplier chemical declarations
+- Lab test reports
+- [REACH](https://environment.ec.europa.eu/topics/chemicals/reach-regulation_en) compliance documentation
+
+## Durability metrics
+
+Measurable indicators of how long the product is expected to last.
+
+### Required fields
+
+- **Expected product lifespan**: Estimated use duration
+- **Fabric strength**: Tear and tensile strength measurements
+- **Color fastness**: Resistance to fading
+- **Component durability**: Quality of zippers, buttons, stitching
+
+### Where this data comes from
+
+- Product testing reports
+- Quality control data
+- Material specifications from suppliers
+- Historical performance data
+
+## Repairability information
+
+Guidance on how the product can be repaired and whether spare parts are available.
+
+### Required fields
+
+- **Repair instructions**: How to fix common issues
+- **Disassembly guidance**: How to take the product apart
+- **Spare parts availability**: Whether replacement components can be purchased
+- **Repair services**: Information about brand or third-party repair options
+
+<Info>
+Repairability data helps extend product life and supports circular economy goals.
+</Info>
+
+### Where this data comes from
+
+- Product design documentation
+- After-sales service programs
+- Repair partner agreements
+- Internal repair guides
+
+## Care instructions
+
+How to wash, dry, and store the product to maximize its lifespan.
+
+### Required fields
+
+- **Washing instructions**: Temperature, method, detergent type
+- **Drying guidance**: Tumble dry, air dry, temperature
+- **Ironing**: Whether safe and at what temperature
+- **Storage recommendations**: How to store when not in use
+
+### Where this data comes from
+
+- Care labels (already required in EU)
+- Material supplier recommendations
+- Product testing data
+
+## Lifecycle environmental impacts
+
+Calculated environmental footprint of the product across its full lifecycle.
+
+### Required fields
+
+- **Carbon footprint**: CO₂ equivalent emissions (kg CO₂e)
+- **Water consumption**: Liters of water used in production
+- **Water scarcity impact**: Water stress in sourcing regions
+- **Energy consumption**: MJ or kWh across lifecycle
+
+<Note>
+Environmental impacts are expected to be calculated using the [Product Environmental Footprint (PEF)](https://green-business.ec.europa.eu/environmental-footprint-methods_en) methodology.
+</Note>
+
+### Where this data comes from
+
+This is one of the hardest data requirements to fulfill. Options include:
+
+- **Third-party LCA tools**: Dedicated carbon accounting platforms
+- **Supplier environmental data**: Direct emissions and resource use data
+- **Industry databases**: Higg MSI, Ecoinvent, etc.
+- **Built-in prediction engines**: Avelero includes ML-based LCA calculation
+
+<Info>
+**How Avelero helps:** Our platform includes a built-in product footprint engine that automatically calculates carbon footprint and water scarcity impacts from your product data. You don't need a separate LCA subscription.
+</Info>
+
+## Recycled and bio-based content
+
+Percentage of materials that come from recycled or renewable sources.
+
+### Required fields
+
+- **Recycled content percentage**: Weight percentage of recycled materials
+- **Recycled content type**: Pre-consumer vs. post-consumer
+- **Textile-to-textile recycling**: Specifically closed-loop textile recycling
+- **Bio-based content**: Percentage from renewable biological sources
+
+### Where this data comes from
+
+- Material certifications (GRS, RCS, RWS)
+- Supplier declarations
+- Chain-of-custody documentation
+- Third-party verification reports
+
+## Recyclability
+
+Information about how the product can be recycled at end of life.
+
+### Required fields
+
+- **Recyclability per material**: Which components can be recycled
+- **Disassembly requirements**: Whether materials need to be separated
+- **Sorting instructions**: Guidance for recycling facilities
+- **Take-back programs**: Brand or third-party collection schemes
+
+### Where this data comes from
+
+- Product design documentation
+- Material recyclability databases
+- Recycling partner specifications
+- Industry recycling guidelines
+
+## Certifications and compliance
+
+Third-party certifications and regulatory compliance documentation.
+
+### Required fields
+
+- **Material certifications**: GOTS, OEKO-TEX, RWS, GRS, etc.
+- **Social certifications**: Fair Trade, SA8000, etc.
+- **Declarations of conformity**: EU regulatory compliance
+- **Test reports**: Safety, performance, restricted substances
+
+### Where this data comes from
+
+- Certificate databases
+- Supplier-provided certificates
+- Third-party auditor reports
+- Internal compliance records
+
+## Data organization challenges
+
+Most brands already have pieces of this data, but it rarely lives in one place:
+
+<Steps>
+  <Step title="Data is fragmented">
+    Material compositions are in your PLM. Supplier information is in your ERP or spreadsheets. Certifications are PDFs in email.
+  </Step>
+  
+  <Step title="Data lacks structure">
+    Information exists but not in a format that a Digital Product Passport can consume.
+  </Step>
+  
+  <Step title="Data needs maintenance">
+    Product information changes with each collection, requiring ongoing updates.
+  </Step>
+  
+  <Step title="Supplier data is incomplete">
+    Getting traceability and environmental data from suppliers takes coordination.
+  </Step>
+</Steps>
+
+## How Avelero structures your data
+
+Avelero helps you organize all required DPP data in one place:
+
+- **Integrations**: Pull product data from Shopify, PLM, and other systems automatically
+- **Data mapping**: Structure existing information into DPP-compliant formats
+- **Gap identification**: Highlight missing data fields that need to be collected
+- **Automated calculations**: Generate environmental impact data without separate LCA tools
+- **Continuous updates**: Keep passports current as product data changes
+
+For implementation timelines and when to start collecting this data, see the [timeline page](/compliance/timeline).

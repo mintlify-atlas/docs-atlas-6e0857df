@@ -1,0 +1,414 @@
+---
+title: Brand customization
+description: Customize the visual appearance and content of your digital product passports to match your brand identity with themes, logos, colors, and custom domains.
+---
+
+Brand customization lets you create digital product passports that look and feel like an extension of your brand, providing a seamless experience from your website to your product transparency pages.
+
+## Why customize passports?
+
+Customization ensures brand consistency:
+
+- **Brand recognition**: Passports match your visual identity
+- **Trust and credibility**: Consistent branding reinforces authenticity
+- **Customer experience**: Seamless transition from your marketing to your transparency
+- **Brand differentiation**: Stand out with unique passport designs
+
+## Theme system
+
+Avelero's theme system separates visual styling from content configuration:
+
+### Theme configuration
+
+Non-visual settings that control what appears:
+
+- Logo and branding assets
+- Navigation menus
+- Section visibility toggles
+- Social media links
+- Call-to-action banners
+
+### Theme styles
+
+Visual design elements:
+
+- Colors (primary, secondary, accent, background)
+- Typography (fonts, sizes, weights)
+- Spacing and layout
+- Custom CSS overrides
+- Component styling tokens
+
+<Info>
+  The separation of config and styles allows you to change what is shown without affecting how it looks, and vice versa.
+</Info>
+
+## Visual customization
+
+### Brand colors
+
+Define your color palette:
+
+<Steps>
+  <Step title="Primary color">
+    Your main brand color, used for headers, buttons, and key UI elements.
+  </Step>
+  
+  <Step title="Secondary color">
+    Supporting color for accents and secondary actions.
+  </Step>
+  
+  <Step title="Background colors">
+    Page background and section backgrounds for visual hierarchy.
+  </Step>
+  
+  <Step title="Text colors">
+    Ensure sufficient contrast for readability while matching brand.
+  </Step>
+</Steps>
+
+Colors are stored as CSS custom properties and applied throughout the passport interface.
+
+### Typography
+
+Customize fonts to match your brand:
+
+#### Google Fonts integration
+
+- Select from hundreds of Google Fonts
+- Fonts are automatically loaded from Google's CDN
+- Font URL is stored in your theme configuration
+- No performance impact on page load
+
+#### Custom fonts
+
+Use your brand's proprietary fonts:
+
+- Upload font files to CDN storage
+- Generate `@font-face` CSS automatically
+- Fonts are served from Supabase storage
+- Support for multiple weights and styles
+
+#### Typography tokens
+
+Control text styling:
+
+- Heading fonts and sizes (H1, H2, H3, H4)
+- Body text font and size
+- Font weights for different elements
+- Line heights and letter spacing
+
+### Custom CSS
+
+For advanced customization:
+
+- Upload a custom stylesheet
+- Override any default styling
+- Add brand-specific design details
+- Stylesheet is hosted on Supabase and linked in passport pages
+
+<Accordion title="Custom CSS best practices">
+  When writing custom CSS:
+  
+  - Use CSS custom properties (variables) defined in the theme
+  - Target component classes rather than recreating entire styles
+  - Test across different screen sizes and devices
+  - Ensure accessibility isn't compromised (contrast, focus states)
+  - Keep styles lightweight to maintain page performance
+</Accordion>
+
+## Branding assets
+
+### Logo
+
+Add your brand logo to passport headers:
+
+- Upload logo image (PNG, SVG, or JPG)
+- Set in theme configuration
+- Appears in passport header
+- Automatically sized and positioned
+
+### Favicon
+
+Custom favicon for passport pages:
+
+- Upload small icon image
+- Appears in browser tabs
+- Reinforces brand even in bookmarks
+
+### Images and media
+
+Beyond logos, add visual elements:
+
+- CTA banner background images
+- Section divider graphics
+- Brand photography
+- All images hosted on CDN
+
+## Content customization
+
+### Navigation menus
+
+Add custom links to passport navigation:
+
+#### Primary menu
+
+Main navigation links:
+
+- Link to your main website
+- Product catalog or shop
+- Sustainability page
+- About us page
+
+Each link has a label and URL.
+
+#### Secondary menu
+
+Footer or supplementary links:
+
+- Privacy policy
+- Terms of service
+- Contact page
+- Support resources
+
+### CTA banner
+
+Add a call-to-action banner to passports:
+
+- Custom headline and subline
+- Button text and link URL
+- Background image
+- Toggle visibility of each element
+
+Useful for:
+- Driving traffic to product pages
+- Promoting sustainability initiatives
+- Encouraging newsletter signups
+- Highlighting certifications or awards
+
+### Social media links
+
+Connect passports to your social presence:
+
+- Instagram
+- Facebook
+- Twitter/X
+- Pinterest
+- TikTok
+- LinkedIn
+
+Each platform can be toggled on/off and has a URL field.
+
+### Footer content
+
+Customize footer elements:
+
+- Brand name (sourced from brand settings)
+- Social media icons and links
+- Secondary navigation menu
+- Copyright and legal information
+
+## Section visibility
+
+Control which sections appear on passports:
+
+<CardGroup cols={2}>
+  <Card title="Product details" icon="box">
+    Basic product information, attributes, and identifiers.
+  </Card>
+  
+  <Card title="Materials" icon="leaf">
+    Material composition, certifications, and recyclability.
+  </Card>
+  
+  <Card title="Environmental impact" icon="seedling">
+    Carbon emissions, water usage, and other metrics.
+  </Card>
+  
+  <Card title="Supply chain journey" icon="map">
+    Production steps and operator traceability.
+  </Card>
+  
+  <Card title="Similar products" icon="grid">
+    Carousel of related products from your catalog.
+  </Card>
+  
+  <Card title="CTA banner" icon="megaphone">
+    Call-to-action with custom messaging.
+  </Card>
+</CardGroup>
+
+Hide sections that aren't relevant or where you don't have data yet.
+
+<Note>
+  Sections with no data are automatically hidden, even if visibility is enabled. This prevents empty sections from appearing on passports.
+</Note>
+
+## Theme preview
+
+Test your theme before publishing:
+
+- Preview mode shows how passports will look
+- Test with different products to see data variations
+- Check responsive design on different screen sizes
+- Iterate on design before making changes live
+
+## Custom domains
+
+Brand owners can use custom domains for passports:
+
+### Why use a custom domain?
+
+- Reinforce brand ownership (passport.yourbrand.com)
+- Improve trust and credibility
+- Consistent domain across all customer touchpoints
+- Better brand recall
+
+### Setting up a custom domain
+
+<Steps>
+  <Step title="Add domain">
+    In brand settings, enter your desired custom domain (e.g., passport.mybrand.com).
+  </Step>
+  
+  <Step title="Get verification token">
+    Avelero generates a unique verification token.
+  </Step>
+  
+  <Step title="Add DNS record">
+    Add a TXT record to your DNS:
+    
+    - Record name: `_avelero-verification.passport.mybrand.com`
+    - Record value: [your verification token]
+  </Step>
+  
+  <Step title="Verify domain">
+    Click "Verify" in Avelero. The system checks DNS records.
+  </Step>
+  
+  <Step title="Update routing">
+    Once verified, configure CNAME or proxy routing to point your domain to Avelero's passport infrastructure.
+  </Step>
+</Steps>
+
+### Domain verification status
+
+Domains can be in three states:
+
+- **Pending**: Domain added, awaiting DNS verification
+- **Verified**: DNS record confirmed, domain is active
+- **Failed**: Verification check failed, retry or check DNS settings
+
+<Accordion title="Domain verification errors">
+  Common verification failures:
+  
+  - DNS record not found: TXT record hasn't propagated yet (wait 24-48 hours)
+  - Wrong token: Copy-paste error in DNS record value
+  - Wrong domain: TXT record added to incorrect subdomain
+  - DNS caching: Clear DNS cache or wait for TTL expiration
+  
+  You can retry verification at any time after correcting issues.
+</Accordion>
+
+### Domain constraints
+
+- One custom domain per brand
+- Domain must be unique (no two brands can use the same domain)
+- Only brand owners can add/modify custom domains
+- Verified domains cannot be changed without deletion and re-verification
+
+## Materials section customization
+
+Special configuration for materials display:
+
+### Certification check icon
+
+Toggle whether a checkmark icon appears next to certified materials:
+
+- Enabled: Visual checkmark highlights certified materials
+- Disabled: Certification details shown in text only
+
+Useful for emphasizing sustainable material choices.
+
+## Carousel configuration
+
+Customize the similar products carousel:
+
+### Display settings
+
+- Number of products to show
+- Show/hide product titles
+- Show/hide product prices
+- Round prices (e.g., $49.99 → $50)
+
+### Product selection
+
+Control which products appear:
+
+- **Include specific products**: Manually select products by ID
+- **Exclude specific products**: Exclude certain products from auto-selection
+- **Filter by criteria**: Use filters like category, season, or tags
+
+The carousel dynamically shows products based on these settings.
+
+## Multi-brand scenarios
+
+If you manage multiple brands:
+
+- Each brand has its own theme configuration
+- Themes are completely isolated between brands
+- No cross-contamination of styles or assets
+- Brand members only see their brand's theme settings
+
+## Theme versioning
+
+Theme changes and passport versions:
+
+- Theme settings are applied when passports are rendered
+- Published passport versions snapshot product data, not theme config
+- Theme changes affect all passports immediately
+- Useful for seasonal updates or rebrands
+
+<Info>
+  Since themes apply at render time, you can update your brand's look without republishing every passport.
+</Info>
+
+## Accessibility considerations
+
+Ensure customizations maintain accessibility:
+
+- Color contrast ratios meet WCAG AA standards (4.5:1 for normal text)
+- Font sizes are readable (minimum 16px for body text)
+- Interactive elements have clear focus states
+- Images include alt text
+- Navigation is keyboard-accessible
+
+The default theme is accessible; test custom styles for compliance.
+
+## Performance optimization
+
+Keep passports fast:
+
+- Optimize image assets (compress logos and banners)
+- Use web-safe fonts or efficient webfonts
+- Minimize custom CSS file size
+- Leverage CDN caching for static assets
+
+## Best practices
+
+<CardGroup cols={2}>
+  <Card title="Stay on brand" icon="palette">
+    Use your official brand colors and fonts to maintain consistency across all touchpoints.
+  </Card>
+  
+  <Card title="Test thoroughly" icon="vial">
+    Preview themes with different products and data scenarios before rolling out changes.
+  </Card>
+  
+  <Card title="Keep it simple" icon="minimize">
+    Avoid over-customization. Clean, clear designs enhance transparency and trust.
+  </Card>
+  
+  <Card title="Mobile-first" icon="mobile">
+    Ensure your theme looks great on mobile devices where many consumers will view passports.
+  </Card>
+</CardGroup>

@@ -1,0 +1,162 @@
+---
+title: Public DPP access
+description: Access published Digital Product Passports via public REST endpoints
+---
+
+The DPP public access API provides unauthenticated read-only access to published Digital Product Passports. These endpoints are designed for consumers scanning QR codes and serve immutable passport snapshots.
+
+## Base URL
+
+The DPP application runs on a separate domain from the main API:
+
+- **Production**: `https://passport.avelero.com` (or custom brand domain)
+- **Development**: `http://localhost:3002`
+
+## Authentication
+
+Public DPP endpoints do **not** require authentication. They are designed for consumer access via QR codes on product labels.
+
+## URL patterns
+
+### UPID-based access
+
+Access a passport using its 16-character UPID (Unique Passport ID):
+
+```
+GET /{upid}
+```
+
+<ParamField path="upid" type="string" required>
+  16-character alphanumeric unique passport identifier (e.g., `A1b2C3d4E5f6G7h8`)
+</ParamField>
+
+**Example:**
+```bash
+curl https://passport.avelero.com/A1b2C3d4E5f6G7h8
+```
+
+Returns an HTML page with the complete Digital Product Passport, including:
+- Product information and images
+- Material composition
+- Supply chain journey
+- Environmental impact metrics
+- Certifications
+- Care instructions
+- Brand-specific theming
+
+### GS1 Digital Link access
+
+Access a passport using a GS1-compliant barcode on a custom domain:
+
+```
+GET /01/{gtin}
+```
+
+<ParamField path="gtin" type="string" required>
+  Global Trade Item Number (8, 12, 13, or 14 digits). The `/01/` prefix follows GS1 Application Identifier standards.
+</ParamField>
+
+<Note>
+GS1 Digital Link URLs **only work on custom domains**. They will not work on `passport.avelero.com`. Brands must configure a custom domain to use GS1 URLs.
+</Note>
+
+**Example:**
+```bash
+# On custom domain: passport.yourbrand.com
+curl https://passport.yourbrand.com/01/12345678901234
+```
+
+The API automatically resolves the GTIN to the corresponding UPID and serves the passport page.
+
+<Warning>
+Attempting to use GS1 Digital Link URLs on non-custom domains returns a 404 error with code `INVALID_PATH`.
+</Warning>
+
+## Response format
+
+All DPP endpoints return **HTML pages** designed for browser rendering, not JSON. The HTML includes:
+
+- Server-side rendered React components
+- Inline CSS with brand theming
+- SEO metadata (Open Graph, Twitter Cards)
+- Structured data (JSON-LD for search engines)
+
+## Caching
+
+Published passports are immutable and heavily cached:
+
+- **Cache-Control**: `public, max-age=31536000` (1 year)
+- **Revalidation**: Cache is invalidated via on-demand revalidation when a new version is published
+
+<Info>
+Passports use Next.js Incremental Static Regeneration (ISR) for optimal performance. The first request after publishing generates the page, subsequent requests are served from cache.
+</Info>
+
+## Custom domains
+
+Brands can configure custom domains for their passports:
+
+- DNS setup: CNAME pointing to Avelero's infrastructure
+- SSL certificates: Automatically provisioned via Let's Encrypt
+- Domain verification: TXT record verification required
+
+See the [custom domains guide](/guides/custom-domains) for setup instructions.
+
+## Error responses
+
+### 404 - Passport not found
+
+Returned when:
+- UPID is invalid (not 16 alphanumeric characters)
+- UPID does not exist in the database
+- Passport has never been published (no snapshot exists)
+- GTIN does not match any variant
+
+### 404 - Invalid path
+
+Returned when attempting to use GS1 Digital Link URLs on non-custom domains:
+
+```json
+{
+  "error": "GS1 Digital Link URLs require a custom domain",
+  "code": "INVALID_PATH",
+  "hint": "Use passport.avelero.com/{upid} for direct passport access, or configure a custom domain for GS1 URLs"
+}
+```
+
+## Inactive passports
+
+If a variant is deleted after a passport was published, the passport remains accessible but displays an "inactive" indicator. This preserves the immutability of published data while informing consumers the product may no longer be available.
+
+## CORS
+
+Public DPP endpoints allow cross-origin requests:
+
+- `Access-Control-Allow-Origin: *`
+- `Access-Control-Allow-Methods: GET`
+
+This enables embedding passport data in third-party applications.
+
+## Rate limiting
+
+Public endpoints are rate-limited by IP address:
+- Limit: 100 requests per minute
+- Burst: 20 requests
+- Response: 429 Too Many Requests with `Retry-After` header
+
+## Implementation reference
+
+The public access endpoints are implemented in:
+- `/apps/dpp/src/app/[upid]/page.tsx` - UPID route handler
+- `/apps/dpp/src/app/01/[barcode]/page.tsx` - GS1 Digital Link handler
+- `/apps/dpp/src/proxy.ts` - Domain routing and URL pattern matching
+- `/apps/dpp/src/lib/api.ts` - Data fetching from publishing layer
+
+<CardGroup cols={2}>
+  <Card title="Revalidation API" icon="rotate" href="/api/dpp/configuration">
+    Learn about cache revalidation
+  </Card>
+  <Card title="Custom domains" icon="globe" href="/guides/custom-domains">
+    Set up custom domains
+  </Card>
+</CardGroup>

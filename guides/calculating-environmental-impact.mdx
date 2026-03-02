@@ -1,0 +1,448 @@
+---
+title: Calculating environmental impact
+description: Add carbon footprint, water usage, and environmental impact data to your digital product passports
+---
+
+Environmental impact data provides consumers with quantified sustainability metrics. Avelero supports carbon footprint (CO₂e), water consumption, and other environmental indicators at both product and variant levels.
+
+## Environmental metrics
+
+Avelero tracks multiple environmental metrics for each product:
+
+- **Carbon footprint**: Total greenhouse gas emissions in kg CO₂e
+- **Water usage**: Total water consumption in liters
+- **Custom metrics**: Extensible system for additional environmental indicators
+
+<Info>
+Environmental data is optional but highly valuable. Products with quantified impact data build greater consumer trust and support sustainability claims.
+</Info>
+
+## Data structure
+
+Environmental data is stored differently at product and variant levels:
+
+### Product-level environment data
+
+Product environment data uses a flexible metric-based system:
+
+```typescript
+{
+  productId: "uuid",
+  metric: "carbon_kg_co2e",  // Metric type
+  value: 12.5,                // Numeric value
+  unit: "kg CO2e",            // Unit of measurement
+  createdAt: "timestamp",
+  updatedAt: "timestamp"
+}
+```
+
+Each metric is stored as a separate row:
+- One row for carbon data
+- One row for water data
+- Additional rows for custom metrics
+
+### Variant-level environment data
+
+Variant environment data uses a denormalized structure for common metrics:
+
+```typescript
+{
+  variantId: "uuid",
+  carbonKgCo2e: 11.2,          // Carbon in kg CO2e
+  waterLiters: 1850.50,        // Water in liters
+  sourceIntegration: "shopify",
+  sourceExternalId: "external-id",
+  createdAt: "timestamp",
+  updatedAt: "timestamp"
+}
+```
+
+<Note>
+Variant environment data overrides product-level data when present. If a variant has `carbonKgCo2e` populated, that value takes precedence over the product's carbon metric.
+</Note>
+
+## Carbon footprint (CO₂e)
+
+Carbon footprint represents the total greenhouse gas emissions from production, expressed in kilograms of carbon dioxide equivalent (kg CO₂e).
+
+### What to include
+
+A comprehensive carbon footprint calculation should include:
+
+<Accordion title="Raw material extraction">
+- Agricultural emissions (for natural fibers)
+- Mining and extraction (for synthetic materials)
+- Land use changes
+- Transportation of raw materials
+</Accordion>
+
+<Accordion title="Manufacturing processes">
+- Energy consumption in spinning, weaving, dyeing
+- Chemical processing
+- Factory operations
+- Waste and wastewater treatment
+</Accordion>
+
+<Accordion title="Transportation">
+- Inter-facility transport
+- International shipping
+- Distribution to retail or consumer
+</Accordion>
+
+<Accordion title="Packaging">
+- Production of packaging materials
+- Packaging assembly
+</Accordion>
+
+<Note>
+End-of-life emissions (consumer use, washing, disposal) are typically excluded from manufacturer-reported carbon footprints but can be included if data is available.
+</Note>
+
+### Carbon calculation methodologies
+
+Common approaches to calculating product carbon footprints:
+
+<Steps>
+  <Step title="Life Cycle Assessment (LCA)">
+    Full LCA following ISO 14040/14044 standards. Most comprehensive but requires extensive data and expertise.
+  </Step>
+  
+  <Step title="Simplified LCA">
+    Streamlined assessment using industry averages and material databases. Faster and less expensive than full LCA.
+  </Step>
+  
+  <Step title="Carbon accounting tools">
+    Use third-party calculators like Higg MSI, Worldly, or CLOMA that provide industry-specific databases.
+  </Step>
+  
+  <Step title="Supplier-provided data">
+    Aggregate carbon data from suppliers and manufacturers. Accuracy depends on supplier data quality.
+  </Step>
+</Steps>
+
+<Info>
+Document your calculation methodology in product descriptions or on your website. Transparency about methods builds credibility.
+</Info>
+
+## Water usage
+
+Water consumption tracks the total water used in production, measured in liters.
+
+### Water consumption vs. water footprint
+
+- **Water consumption**: Direct water used in manufacturing processes
+- **Water footprint**: Includes blue water (surface/groundwater), green water (rainwater), and grey water (pollution)
+
+Avelero's `waterLiters` field can represent either metric. Document which approach you use.
+
+### What to include
+
+<Accordion title="Agricultural water use">
+- Irrigation for cotton, linen, or other natural fibers
+- Livestock water consumption (for wool, leather)
+- Processing of agricultural materials
+</Accordion>
+
+<Accordion title="Manufacturing water use">
+- Dyeing and finishing processes
+- Washing and rinsing
+- Steam generation
+- Cooling systems
+</Accordion>
+
+<Accordion title="Indirect water use">
+- Energy generation (if tracked)
+- Chemical production
+</Accordion>
+
+<Note>
+Textile production is water-intensive. Typical water usage ranges from 2,000-20,000 liters per garment depending on materials and processes.
+</Note>
+
+## Adding environmental data
+
+Environmental data is added through the product editor or programmatically via integrations.
+
+### Manual data entry
+
+Currently, environmental metrics are added via the product form:
+
+<Steps>
+  <Step title="Open product editor">
+    Navigate to the product and access the Environment section
+  </Step>
+  
+  <Step title="Enter carbon footprint">
+    Input the carbon value in kg CO₂e
+  </Step>
+  
+  <Step title="Enter water usage">
+    Input the water consumption in liters
+  </Step>
+  
+  <Step title="Save the product">
+    Environmental data is saved and will appear in the digital passport
+  </Step>
+</Steps>
+
+### Variant-level overrides
+
+For products where variants have different environmental impacts:
+
+```
+Product: "T-Shirt"
+├─ Product carbon: 5.2 kg CO₂e
+├─ Product water: 2,700 L
+│
+├─ Variant: "Organic Cotton - White"
+│  └─ Inherits: 5.2 kg CO₂e, 2,700 L
+│
+└─ Variant: "Conventional Cotton - Black"
+   └─ Override: 6.8 kg CO₂e, 3,200 L
+```
+
+Variant overrides allow you to account for differences in:
+- Material choices (organic vs. conventional)
+- Production methods (different facilities)
+- Dyeing processes (natural vs. synthetic dyes)
+
+## Data precision and accuracy
+
+### Numeric precision
+
+Environmental values are stored with high precision:
+
+```typescript
+carbonKgCo2e: numeric({ precision: 12, scale: 4 })
+// Supports values like: 12.3456 kg CO2e
+
+waterLiters: numeric({ precision: 12, scale: 2 })
+// Supports values like: 2847.50 L
+```
+
+This precision supports both small items (e.g., 0.5 kg CO₂e) and large items (e.g., 150.25 kg CO₂e).
+
+### Significant figures
+
+Report values with appropriate precision based on calculation accuracy:
+
+- **LCA-derived**: 2-3 significant figures (e.g., 12.5 kg CO₂e)
+- **Estimated**: 1-2 significant figures (e.g., 10 kg CO₂e)
+- **Supplier-aggregated**: Match supplier precision
+
+<Note>
+Over-precise values (e.g., 12.3456 kg CO₂e) imply false accuracy. Round to reflect actual data quality.
+</Note>
+
+## Data sources and methodologies
+
+Transparency about data sources builds credibility. Common sources include:
+
+<Accordion title="Product-specific LCA">
+**Pros:**
+- Most accurate
+- Accounts for specific materials, processes, locations
+
+**Cons:**
+- Expensive ($5,000-$50,000 per product)
+- Time-consuming (weeks to months)
+- Requires specialized expertise
+
+**Best for:** Flagship products, high-volume items, sustainability leaders
+</Accordion>
+
+<Accordion title="Industry databases">
+**Examples:**
+- Higg Materials Sustainability Index (MSI)
+- Ecoinvent database
+- GaBi databases
+- CLOMA Carbon Footprint Database
+
+**Pros:**
+- Industry-validated data
+- Covers common materials and processes
+- Regularly updated
+
+**Cons:**
+- May not match your specific supply chain
+- Averages may obscure facility-specific performance
+
+**Best for:** Standard materials, typical production processes
+</Accordion>
+
+<Accordion title="Supplier-provided data">
+**Approach:**
+- Request environmental data from each supply chain tier
+- Aggregate data across the journey
+
+**Pros:**
+- Reflects actual supply chain
+- Builds supplier engagement
+
+**Cons:**
+- Data quality varies by supplier
+- Some suppliers may lack data
+- Verification challenges
+
+**Best for:** Brands with strong supplier relationships, multi-tier transparency goals
+</Accordion>
+
+<Accordion title="Carbon accounting platforms">
+**Examples:**
+- Worldly (formerly Higg)
+- CLOMA
+- Carbon Trust Footprinting
+- Vaayu
+
+**Pros:**
+- Streamlined calculation workflows
+- Industry-specific methodologies
+- Often include databases and tools
+
+**Cons:**
+- Subscription costs
+- Learning curve
+- May require data standardization
+
+**Best for:** Brands measuring multiple products, ongoing tracking
+</Accordion>
+
+## Displaying environmental data
+
+Environmental data appears in digital product passports when populated:
+
+- Carbon footprint shown with kg CO₂e unit
+- Water usage shown with liter unit
+- Visual indicators (icons, charts) enhance comprehension
+- Comparison to benchmarks (e.g., "30% lower than industry average")
+
+<Info>
+Consider adding explanatory text in product descriptions to help consumers understand what the numbers mean and how they were calculated.
+</Info>
+
+## Data updates and versioning
+
+Environmental data should be updated when:
+
+- Supply chain changes (new operators, different processes)
+- Material sourcing changes
+- More accurate data becomes available
+- Calculation methodologies improve
+
+<Note>
+Avelero doesn't currently version environmental data. When you update values, the previous data is overwritten. Track historical data externally if needed for trend analysis.
+</Note>
+
+## Integration with external systems
+
+Variant-level environmental data includes source tracking:
+
+```typescript
+{
+  variantId: "abc-123",
+  carbonKgCo2e: 8.5,
+  waterLiters: 2100,
+  sourceIntegration: "worldly",
+  sourceExternalId: "worldly-assessment-456"
+}
+```
+
+This enables:
+- Automatic syncing from carbon accounting platforms
+- Data lineage tracking
+- Validation against source systems
+
+## Best practices
+
+<Steps>
+  <Step title="Start with key products">
+    Calculate environmental data for your highest-volume or flagship products first. Expand coverage over time.
+  </Step>
+  
+  <Step title="Document your methodology">
+    Clearly explain calculation methods, data sources, and boundaries. Publish this on your website.
+  </Step>
+  
+  <Step title="Use credible sources">
+    Prioritize LCA data, validated databases, and certified tools over estimates or assumptions.
+  </Step>
+  
+  <Step title="Be conservative with claims">
+    When uncertain, round up emissions and round down benefits. Avoid greenwashing accusations.
+  </Step>
+  
+  <Step title="Update regularly">
+    Review environmental data annually or when supply chains change significantly.
+  </Step>
+  
+  <Step title="Seek verification">
+    Consider third-party verification for environmental claims, especially for marketing use.
+  </Step>
+  
+  <Step title="Provide context">
+    Help consumers understand the numbers with comparisons (e.g., "equivalent to driving X km").
+  </Step>
+</Steps>
+
+## Common workflows
+
+<Accordion title="Calculating carbon for a new product">
+1. **Map the supply chain**: Document all journey steps and operators
+2. **Identify emission sources**: Raw materials, manufacturing, transport, packaging
+3. **Gather data**:
+   - Request facility-specific data from suppliers
+   - Use industry databases for gaps
+   - Calculate transport emissions using distance and mode
+4. **Aggregate emissions**: Sum all sources to get total kg CO₂e
+5. **Enter in Avelero**: Add carbon value to product environment data
+6. **Document**: Record methodology and sources for future updates
+</Accordion>
+
+<Accordion title="Updating water data across a collection">
+1. Identify products in the collection (use Season or Tag filters)
+2. Obtain updated water consumption data (from LCA update, new supplier data)
+3. Edit each product and update the water value
+4. Save changes
+
+Future feature: Bulk editing will streamline this workflow.
+</Accordion>
+
+<Accordion title="Handling products with variable impact">
+For products where environmental impact varies significantly by variant:
+
+**Option 1:** Use average at product level
+- Calculate weighted average across all variants
+- Acceptable when variation is less than 20%
+
+**Option 2:** Use variant-level overrides
+- Calculate impact for each variant
+- Enter specific values at variant level
+- More accurate but requires more data
+
+**Option 3:** Create separate products
+- Split high-variation products into separate product entries
+- Each gets its own environmental data
+</Accordion>
+
+## Regulatory considerations
+
+Environmental claims are increasingly regulated:
+
+- **EU Green Claims Directive**: Requires substantiation of environmental claims
+- **Digital Product Passport (DPP) regulation**: May mandate carbon and environmental data
+- **FTC Green Guides (US)**: Requires clear, substantiated environmental marketing
+
+<Info>
+Consult legal counsel before making public environmental claims. Ensure your data and methodology meet applicable regulatory standards.
+</Info>
+
+## Future enhancements
+
+Planned features for environmental data:
+
+- Additional metrics (energy, waste, recyclability score)
+- Methodology documentation fields
+- Data source linking
+- Comparative benchmarks
+- Visual impact representations
+- Integration with carbon accounting platforms

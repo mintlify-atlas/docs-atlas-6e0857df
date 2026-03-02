@@ -1,0 +1,380 @@
+---
+title: Theme configuration
+description: Manage brand theme styles and content configuration for Digital Product Passports
+---
+
+## Get theme
+
+Retrieve the complete theme configuration (styles and content) for the active brand.
+
+```typescript
+const theme = await trpc.brand.theme.get.query();
+```
+
+### Response
+
+<ResponseField name="themeStyles" type="object">
+  Complete theme styles configuration including colors, typography, and component styling
+  
+  <Expandable title="Theme styles structure">
+    
+    <ResponseField name="colors" type="object">
+      Design system color tokens
+      
+      - `background` - Page background color (hex)
+      - `foreground` - Primary text color (hex)
+      - `muted` - Muted background color (hex)
+      - `mutedForeground` - Muted text color (hex)
+      - `card` - Card background color (hex)
+      - `cardForeground` - Card text color (hex)
+      - `primary` - Primary brand color (hex)
+      - `primaryForeground` - Primary brand text color (hex)
+      - `success` - Success background color (hex)
+      - `successForeground` - Success text color (hex)
+      - `border` - Border color (hex)
+      - `link` - Link color (hex)
+    </ResponseField>
+    
+    <ResponseField name="typography" type="object">
+      Typography scale for headings and body text
+      
+      Each typescale (`h1`, `h2`, `h3`, `h4`, `h5`, `h6`, `body`, `body-sm`, `body-xs`) includes:
+      - `fontFamily` - Font family name
+      - `fontSize` - Font size in pixels
+      - `fontWeight` - Font weight (100-900)
+      - `lineHeight` - Line height multiplier
+      - `letterSpacing` - Letter spacing (em units)
+    </ResponseField>
+    
+    <ResponseField name="[component]" type="object">
+      Component-specific styles (header, footer, product, carousel, banner, etc.)
+      
+      Each component can include:
+      - Color properties (`color`, `backgroundColor`, `borderColor`)
+      - Border properties (`borderRadius`, `borderWidth`)
+      - Typography (`typescale`, `textTransform`, `textAlign`)
+      - Layout (`flexDirection`, `alignItems`, `justifyContent`)
+      - Size properties (`size` for icons)
+      
+      **Token references:** Color values starting with `$` (e.g., `$primary`) reference design tokens and cascade automatically. Hex values (e.g., `#FF0000`) are explicit overrides.
+    </ResponseField>
+    
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="themeConfig" type="object">
+  Theme content configuration including branding, menus, CTAs, and section visibility
+  
+  <Expandable title="Theme config structure">
+    See [Theme config structure](#theme-config-structure) below for complete details
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="googleFontsUrl" type="string | null">
+  Google Fonts URL for loading custom fonts, if configured
+</ResponseField>
+
+<ResponseField name="updatedAt" type="string | null">
+  ISO 8601 timestamp of last theme update
+</ResponseField>
+
+### Default values
+
+If no theme is configured, returns:
+```json
+{
+  "themeStyles": {},
+  "themeConfig": {},
+  "googleFontsUrl": null,
+  "updatedAt": null
+}
+```
+
+---
+
+## Update theme config
+
+Update the theme content configuration (menus, banner, social links, section visibility, carousel settings).
+
+<Note>
+This endpoint updates **content configuration only**, not theme styles. Image URLs in the config are automatically normalized to storage paths.
+</Note>
+
+```typescript
+const result = await trpc.brand.theme.update.mutate({
+  config: {
+    branding: {
+      headerLogoUrl: "/api/storage/theme-images/logo.png"
+    },
+    menus: {
+      primary: [
+        { label: "About", url: "https://acme.com/about" },
+        { label: "Contact", url: "https://acme.com/contact" }
+      ],
+      secondary: []
+    },
+    sections: {
+      showProductDetails: true,
+      showImpact: true,
+      showMaterials: true,
+      showJourney: true,
+      showCTABanner: false
+    },
+    carousel: {
+      productCount: 4,
+      showPrice: true,
+      showTitle: true
+    }
+  }
+});
+```
+
+### Input parameters
+
+<ParamField path="config" type="object" required>
+  Theme configuration object (stored as JSONB)
+  
+  **Note:** Validation is performed client-side. The API accepts any object structure.
+</ParamField>
+
+### Behavior
+
+- **Image path normalization**: URLs in the config are converted to storage paths before saving
+- **Cache revalidation**: All Digital Product Passport pages for the brand are revalidated (fire-and-forget)
+- **Validation failures**: Revalidation errors don't affect the response—config update succeeds regardless
+
+### Errors
+
+- `500 Internal Server Error`: Failed to update theme config
+
+---
+
+## Theme config structure
+
+Complete structure of the `ThemeConfig` object:
+
+### Branding
+
+<ParamField path="branding.headerLogoUrl" type="string">
+  URL or storage path for the header logo image
+</ParamField>
+
+### Menus
+
+<ParamField path="menus.primary" type="array">
+  Primary navigation menu items
+  
+  Each item contains:
+  - `label` (string) - Menu item text
+  - `url` (string) - Link destination
+</ParamField>
+
+<ParamField path="menus.secondary" type="array">
+  Secondary navigation menu items
+  
+  Same structure as primary menu
+</ParamField>
+
+### CTA banner
+
+<ParamField path="cta.bannerBackgroundImage" type="string">
+  Background image URL for the CTA banner
+</ParamField>
+
+<ParamField path="cta.bannerHeadline" type="string">
+  Main headline text for the banner
+</ParamField>
+
+<ParamField path="cta.bannerSubline" type="string">
+  Subheadline text for the banner
+</ParamField>
+
+<ParamField path="cta.bannerCTAText" type="string">
+  Call-to-action button text
+</ParamField>
+
+<ParamField path="cta.bannerCTAUrl" type="string">
+  Call-to-action button URL
+</ParamField>
+
+<ParamField path="cta.showHeadline" type="boolean">
+  Toggle headline visibility
+  
+  **Default:** `true`
+</ParamField>
+
+<ParamField path="cta.showSubline" type="boolean">
+  Toggle subline visibility
+  
+  **Default:** `true`
+</ParamField>
+
+<ParamField path="cta.showButton" type="boolean">
+  Toggle CTA button visibility
+  
+  **Default:** `true`
+</ParamField>
+
+### Social links
+
+<ParamField path="social.showInstagram" type="boolean">
+  Show Instagram icon in footer
+  
+  **Default:** `false`
+</ParamField>
+
+<ParamField path="social.showFacebook" type="boolean">
+  Show Facebook icon in footer
+  
+  **Default:** `false`
+</ParamField>
+
+<ParamField path="social.showTwitter" type="boolean">
+  Show Twitter/X icon in footer
+  
+  **Default:** `false`
+</ParamField>
+
+<ParamField path="social.showPinterest" type="boolean">
+  Show Pinterest icon in footer
+  
+  **Default:** `false`
+</ParamField>
+
+<ParamField path="social.showTiktok" type="boolean">
+  Show TikTok icon in footer
+  
+  **Default:** `false`
+</ParamField>
+
+<ParamField path="social.showLinkedin" type="boolean">
+  Show LinkedIn icon in footer
+  
+  **Default:** `false`
+</ParamField>
+
+<ParamField path="social.instagramUrl" type="string">
+  Instagram profile URL
+</ParamField>
+
+<ParamField path="social.facebookUrl" type="string">
+  Facebook page URL
+</ParamField>
+
+<ParamField path="social.twitterUrl" type="string">
+  Twitter/X profile URL
+</ParamField>
+
+<ParamField path="social.pinterestUrl" type="string">
+  Pinterest profile URL
+</ParamField>
+
+<ParamField path="social.tiktokUrl" type="string">
+  TikTok profile URL
+</ParamField>
+
+<ParamField path="social.linkedinUrl" type="string">
+  LinkedIn company page URL
+</ParamField>
+
+### Section visibility
+
+<ParamField path="sections.showProductDetails" type="boolean">
+  Show product details section on DPP
+  
+  **Default:** `true`
+</ParamField>
+
+<ParamField path="sections.showPrimaryMenu" type="boolean">
+  Show primary navigation menu
+  
+  **Default:** `false`
+</ParamField>
+
+<ParamField path="sections.showSecondaryMenu" type="boolean">
+  Show secondary navigation menu
+  
+  **Default:** `false`
+</ParamField>
+
+<ParamField path="sections.showImpact" type="boolean">
+  Show environmental impact section
+  
+  **Default:** `true`
+</ParamField>
+
+<ParamField path="sections.showMaterials" type="boolean">
+  Show materials composition section
+  
+  **Default:** `true`
+</ParamField>
+
+<ParamField path="sections.showJourney" type="boolean">
+  Show product journey/traceability section
+  
+  **Default:** `true`
+</ParamField>
+
+<ParamField path="sections.showSimilarProducts" type="boolean">
+  Show similar products carousel
+  
+  **Default:** `false`
+</ParamField>
+
+<ParamField path="sections.showCTABanner" type="boolean">
+  Show CTA banner section
+  
+  **Default:** `false`
+</ParamField>
+
+### Materials section
+
+<ParamField path="materials.showCertificationCheckIcon" type="boolean">
+  Show check icon next to certified materials
+  
+  **Default:** `true`
+</ParamField>
+
+### Carousel configuration
+
+<ParamField path="carousel.productCount" type="number">
+  Number of products to display in carousel
+  
+  **Default:** `4`
+</ParamField>
+
+<ParamField path="carousel.showPrice" type="boolean">
+  Display product prices in carousel
+  
+  **Default:** `true`
+</ParamField>
+
+<ParamField path="carousel.showTitle" type="boolean">
+  Display product titles in carousel
+  
+  **Default:** `true`
+</ParamField>
+
+<ParamField path="carousel.roundPrice" type="boolean">
+  Round prices to nearest whole number
+  
+  **Default:** `true`
+</ParamField>
+
+<ParamField path="carousel.filter" type="object">
+  FilterState structure for selecting which products to show
+  
+  **Optional** - Applies product filters to carousel selection
+</ParamField>
+
+<ParamField path="carousel.includeIds" type="string[]">
+  Array of product UUIDs to include in carousel
+  
+  **Optional** - Explicitly include specific products
+</ParamField>
+
+<ParamField path="carousel.excludeIds" type="string[]">
+  Array of product UUIDs to exclude from carousel
+  
+  **Optional** - Explicitly exclude specific products
+</ParamField>
