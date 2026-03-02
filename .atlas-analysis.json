@@ -1,0 +1,145 @@
+{
+  "projectType": "saas",
+  "projectName": "Avelero",
+  "projectDescription": "Digital Product Passports for fashion brands to manage sustainability data and comply with EU regulations.",
+  "theme": "willow",
+  "primaryColor": "#16a34a",
+  "lightColor": "#86efac",
+  "darkColor": "#166534",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart"
+            ]
+          },
+          {
+            "group": "Core Features",
+            "pages": [
+              "features/digital-product-passports",
+              "features/product-catalog",
+              "features/supply-chain-traceability",
+              "features/environmental-impact",
+              "features/brand-customization"
+            ]
+          },
+          {
+            "group": "Integrations",
+            "pages": [
+              "integrations/overview",
+              "integrations/shopify",
+              "integrations/bulk-import-export"
+            ]
+          },
+          {
+            "group": "Compliance",
+            "pages": [
+              "compliance/eu-dpp-regulation",
+              "compliance/data-requirements",
+              "compliance/timeline"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Getting Started",
+            "pages": [
+              "api/introduction",
+              "api/authentication"
+            ]
+          },
+          {
+            "group": "Products",
+            "pages": [
+              "api/products/overview",
+              "api/products/create",
+              "api/products/update",
+              "api/products/list"
+            ]
+          },
+          {
+            "group": "Catalog",
+            "pages": [
+              "api/catalog/attributes",
+              "api/catalog/materials",
+              "api/catalog/certifications"
+            ]
+          },
+          {
+            "group": "Brand",
+            "pages": [
+              "api/brand/settings",
+              "api/brand/theme",
+              "api/brand/collections"
+            ]
+          },
+          {
+            "group": "DPP",
+            "pages": [
+              "api/dpp/public-access",
+              "api/dpp/configuration"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Guides",
+        "groups": [
+          {
+            "group": "Platform Setup",
+            "pages": [
+              "guides/getting-started",
+              "guides/creating-your-first-product",
+              "guides/configuring-your-brand"
+            ]
+          },
+          {
+            "group": "Data Management",
+            "pages": [
+              "guides/product-data-structure",
+              "guides/materials-and-composition",
+              "guides/supply-chain-mapping",
+              "guides/calculating-environmental-impact"
+            ]
+          },
+          {
+            "group": "Advanced",
+            "pages": [
+              "guides/custom-domains",
+              "guides/theming-and-branding",
+              "guides/webhooks"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Digital Product Passport (DPP) creation and management",
+    "Product catalog with materials, certifications, and supply chain data",
+    "Environmental impact calculation (LCA prediction engine)",
+    "Brand customization and theming for public-facing DPPs",
+    "Shopify and bulk import/export integrations",
+    "EU ESPR compliance tracking and reporting",
+    "Multi-tier supply chain traceability",
+    "Public REST API and private tRPC API"
+  ],
+  "publicApiSurface": [
+    "Brand management (tRPC: brand.create, brand.update, brand.theme)",
+    "Product CRUD (tRPC: products.create, products.update, products.list)",
+    "Catalog management (tRPC: catalog.attributes, catalog.materials, catalog.certifications)",
+    "Bulk operations (tRPC: bulk.import, bulk.export, bulk.qrExport)",
+    "DPP public access (REST: /api/dpp/[brand]/[upid])",
+    "Shopify integration (REST: /api/integrations/shopify)",
+    "Webhooks (REST: /api/integrations/shopify/webhooks)",
+    "Background jobs via Trigger.dev"
+  ]
+}
